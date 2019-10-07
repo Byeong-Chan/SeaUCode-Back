@@ -6,13 +6,22 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "async": "^3.1.0",
     "cookie-parser": "~1.4.3",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "debug": "~2.6.9",
     "express": "~4.16.0",
+    "fs": "0.0.1-security",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15",
     "mongoose": "^5.7.3",
     "morgan": "~1.9.0",
+    "multer": "^1.4.2",
+    "nodemailer": "^6.3.0",
+    "path": "^0.12.7",
     "stylus": "0.54.5"
   }
 }
