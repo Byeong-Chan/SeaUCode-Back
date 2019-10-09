@@ -22,36 +22,57 @@ router.post('/', function(req, res, next) {
 
     /* ------------- */
 
+    model.user.find({email: req.body.email}).then(result => {
+        if (result.length >= 1) {
+            console.log(result);
+            res.status(403).send('already-register');
+            return true;
+        }
+        return false;
+    }).then(exist => {
+        if(exist) {
+            /*--------------
+            TODO: email token 을 재발급 하는 기능을 만들어야 합니다. 이 부분에 대해서는 토론이 필요합니다. */
 
-    var etoken = crypto.randomBytes(32).toString('hex');
-    etoken = req.body.email + etoken;
-    etoken = crypto.createHash('sha512').update(etoken).digest('hex');
-
-    var user_salt = crypto.randomBytes(128).toString('hex');
-    var hashed_password = crypto.createHmac('sha512', user_salt).update(req.body.password).digest('hex');
-
-    save_obj = model.user({
-        email: req.body.email,
-        password: hashed_password,
-        email_token: '', // TODO: 나중에 etoken 으로 변경
-        email_auth: true, // TODO: 나중에 false 로 변경
-        role: req.body.role,
-        solved_problem: [],
-        classroom: [],
-        salt: user_salt
-    });
-
-    save_obj.save(err => {
-        if(err) {
-            res.status(403).send('email-form-error');
+            console.log(exist);
         }
         else {
-            /* ----------
-            TODO: 여기서 이메일을 보내는 작업을 작성하십시오. 비동기 작업이어야 합니다. */
+            var etoken = crypto.randomBytes(32).toString('hex');
+            etoken = req.body.email + etoken;
+            etoken = crypto.createHash('sha512').update(etoken).digest('hex');
+
+            var user_salt = crypto.randomBytes(128).toString('hex');
+            var hashed_password = crypto.createHmac('sha512', user_salt).update(req.body.password).digest('hex');
+
+            save_obj = model.user({
+                email: req.body.email,
+                password: hashed_password,
+                email_token: '', // TODO: 나중에 etoken 으로 변경
+                email_auth: true, // TODO: 나중에 false 로 변경
+                role: req.body.role,
+                solved_problem: [],
+                classroom: [],
+                salt: user_salt
+            });
+
+            save_obj.save(err => {
+                if (err) {
+                    res.status(403).send('email-form-error');
+                }
+                else {
+                    /* ----------
+                    TODO: 여기서 이메일을 보내는 작업을 작성하십시오. 비동기 작업이어야 합니다. */
 
 
-            res.status(200).send('register-success');
+                    res.status(200).send('register-success');
+                }
+            });
         }
+    }).catch(err => {
+        /* --------
+        TODO: 런타임 에러를 핸들링 하십시오. */
+
+        res.status(500).send('server-error');
     });
 });
 
