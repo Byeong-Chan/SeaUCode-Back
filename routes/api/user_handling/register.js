@@ -21,17 +21,9 @@ router.post('/', function(req, res, next) {
     /* ------------- */
 
     model.user.find({email: req.body.email}).then(result => {
-        if (result.length >= 1) {
-            res.status(403).send({message: 'already-register'});
-            return true;
-        }
-        return false;
-    }).then(exist => {
-        if(exist) {
-            /*--------------
-            TODO: email token 을 재발급 하는 기능을 만들어야 합니다. 이 부분에 대해서는 토론이 필요합니다. */
-        }
-        else {
+        if (result.length >= 1) throw new Error('already-register');
+        return;
+    }).then(() => {
             var etoken = crypto.randomBytes(32).toString('hex');
             etoken = req.body.email + etoken;
             etoken = crypto.createHash('sha512').update(etoken).digest('hex');
@@ -62,12 +54,19 @@ router.post('/', function(req, res, next) {
                     res.status(200).send({message: 'register-success'});
                 }
             });
-        }
     }).catch(err => {
         /* --------
         TODO: 런타임 에러를 핸들링 하십시오. */
 
-        res.status(500).send({message: 'server-error'});
+        if(err.message === "already-register") {
+            /*--------------
+            TODO: email token 을 재발급 하는 기능을 만들어야 합니다. 이 부분에 대해서는 토론이 필요합니다. */
+
+            res.status(403).send({message: 'already-register'});
+        }
+        else {
+            res.status(500).send({message: 'server-error'});
+        }
     });
 });
 
