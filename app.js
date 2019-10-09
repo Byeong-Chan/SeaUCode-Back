@@ -7,6 +7,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const stylus = require('stylus');
+const mongoose = require('mongoose');
+const uri = require('./uri.js');
 
 
 /* ----
@@ -45,5 +47,19 @@ app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.render('error');
 });
+
+/* ---------
+ mongoose connected */
+
+mongoose.connect(uri.mongodbUri, {useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true });
+mongoose.Promise = global.Promise;
+
+const db = mongoose.connection;
+db.on('error', console.error);
+db.once('open', ()=>{
+    console.log('connected to mongodb server')
+});
+
+/* ------- */
 
 module.exports = app;
