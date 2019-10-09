@@ -1,21 +1,15 @@
 const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
-    email : {type : Number , required : true, match : /.+\@.+@..+/, lowercae: true},
+    email : {type : String , required : true, match : /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, lowercae: true},
     // email을 받을 때 이미 존재하는 여부 따지고 특정형식을 따르며 소문자로 받아야함
-    password : {type : String, trim : true,
-        validate : [
-            function(password) {
-                return password.length >= 8;},
-            'Password should be longer'
-        ]
-    }, // password에 공백이 없어야하고 길이는 8이상
+    password : String,
 
     role : {type : Number, enum : ['Teacher', 'Student']},
     email_auth : Boolean,
     email_token : String,
-    solved_problem : [String], //여기서 [String]이라고 하는게 문법에 맞는지에 대한 의문?
-    classroom : [String],
-
+    solved_problems : [String], //여기서 [String]이라고 하는게 문법에 맞는지에 대한 의문?
+    classroom_list : [String],
+    salt: String
 });
 
 const classroomSchema = new mongoose.Schema({
