@@ -12,9 +12,6 @@ router.use(bodyParser.urlencoded({
     extended: false
 }));
 
-mongoose.connect(uri.mongodbUri, {useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true });
-mongoose.Promise = global.Promise;
-
 /* GET home page. */
 router.post('/', function(req, res, next) {
     /* -------------
@@ -25,7 +22,6 @@ router.post('/', function(req, res, next) {
 
     model.user.find({email: req.body.email}).then(result => {
         if (result.length >= 1) {
-            console.log(result);
             res.status(403).send({message: 'already-register'});
             return true;
         }
@@ -34,8 +30,6 @@ router.post('/', function(req, res, next) {
         if(exist) {
             /*--------------
             TODO: email token 을 재발급 하는 기능을 만들어야 합니다. 이 부분에 대해서는 토론이 필요합니다. */
-
-            console.log(exist);
         }
         else {
             var etoken = crypto.randomBytes(32).toString('hex');
