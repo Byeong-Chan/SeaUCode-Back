@@ -1,7 +1,8 @@
-var express = require('express');
-var router = express.Router();
-var mongoose = require('mongoose');
-var model = require('../../../models/model.js');
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
+
+const model = require('../../../models/model.js');
 const crypto = require('crypto');
 const uri = require('../../../uri.js');
 
