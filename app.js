@@ -9,6 +9,7 @@ const logger = require('morgan');
 const stylus = require('stylus');
 const mongoose = require('mongoose');
 const uri = require('./uri.js');
+const secret_key = require('./secret_key');
 
 
 /* ----
@@ -21,6 +22,7 @@ const app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
+app.set('jwt-secret', secret_key.key);
 
 app.use(logger('dev'));
 app.use(express.json());
