@@ -25,7 +25,7 @@ router.post('/', function(req, res, next) {
     model.user.find({email: req.body.email}).then(result => {
         if (result.length >= 1) {
             console.log(result);
-            res.status(403).send('already-register');
+            res.status(403).send({message: 'already-register'});
             return true;
         }
         return false;
@@ -57,14 +57,14 @@ router.post('/', function(req, res, next) {
 
             save_obj.save(err => {
                 if (err) {
-                    res.status(403).send('email-form-error');
+                    res.status(403).send({message: 'email-form-error'});
                 }
                 else {
                     /* ----------
                     TODO: 여기서 이메일을 보내는 작업을 작성하십시오. 비동기 작업이어야 합니다. */
 
 
-                    res.status(200).send('register-success');
+                    res.status(200).send({message: 'register-success'});
                 }
             });
         }
@@ -72,7 +72,7 @@ router.post('/', function(req, res, next) {
         /* --------
         TODO: 런타임 에러를 핸들링 하십시오. */
 
-        res.status(500).send('server-error');
+        res.status(500).send({message: 'server-error'});
     });
 });
 
@@ -80,7 +80,7 @@ router.get('/authorization/:authToken', function(req, res, next) {
     /* -------
     TODO: 여기서 이메일 인증을 작성하십시오. */
 
-    res.status(200).send("성공");
+    res.status(200).send({message: "email_auth_success"});
 });
 
 module.exports = router;
