@@ -40,7 +40,7 @@ router.post('/', function(req, res, next) {
                         subject: 'userInfo'
                     }, (err, token) => {
                         if (err) reject(err);
-                        resolve(token);
+                        else resolve(token);
                     });
             });
         }
