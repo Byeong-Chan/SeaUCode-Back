@@ -22,8 +22,9 @@ router.post('/', function(req, res, next) {
         if(false) { // TODO: if 조건문을 적절히 수정해주세요.
             reject(new Error('password-error'));
         }
-
-        resolve(model.user.find({email: req.body.email}));
+        else {
+            resolve(model.user.find({email: req.body.email}));
+        }
     }).then(result => {
         if (result.length >= 1) throw new Error('already-register');
         return;
