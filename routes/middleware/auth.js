@@ -34,13 +34,15 @@ const authMiddleware = (req, res, next) => {
     // if it has failed to verify, it will return an error message
     const onError = (error) => {
         res.status(403).json({
-            success: false,
-            message: error.message
+            message: "auth-fail"
         });
     };
 
     // process the promise
-    p.then(respond).catch(onError);
+    p.then(respond => {
+        req.decoded_token = respond;
+        next();
+    }).catch(onError);
 };
 
 module.exports = authMiddleware;
