@@ -14,13 +14,17 @@ router.use(bodyParser.urlencoded({
 
 /* GET home page. */
 router.post('/', function(req, res, next) {
-    /* -------------
-     TODO: PASSWORD 검증 하는 작업을 여기서 하십시오. 모델에 저장되는 패스워드는 salt가 쳐진 형태입니다. */
 
+    new Promise((resolve, reject) => {
+        /* -------------
+         TODO: PASSWORD 검증 하는 작업을 여기서 하십시오. 모델에 저장되는 패스워드는 salt가 쳐진 형태입니다. */
 
-    /* ------------- */
+        if(false) { // TODO: if 조건문을 적절히 수정해주세요.
+            reject(new Error('password-error'));
+        }
 
-    model.user.find({email: req.body.email}).then(result => {
+        resolve(model.user.find({email: req.body.email}));
+    }).then(result => {
         if (result.length >= 1) throw new Error('already-register');
         return;
     }).then(() => {
@@ -63,6 +67,9 @@ router.post('/', function(req, res, next) {
             TODO: email token 을 재발급 하는 기능을 만들어야 합니다. 이 부분에 대해서는 토론이 필요합니다. */
 
             res.status(403).send({message: 'already-register'});
+        }
+        else if(err.message === "password-error") {
+            res.status(403).send({message: 'password-error'});
         }
         else {
             res.status(500).send({message: 'server-error'});
