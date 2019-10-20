@@ -75,11 +75,26 @@ judgeResultSchema.plugin(autoIncrement.plugin, {
     startAt: 100000
 });
 
+const judgeQueueSchema = new mongoose.Schema({
+    server_number: Number,
+    server_ip: String,
+    pending_number: Number
+});
+
+const judgeServerSchema = new mongoose.Schema({
+    server_number: Number,
+    server_ip: String,
+    queue_size: Number,
+    state : {type : Number, enum : ['OK', 'Error']}
+});
+
 //참고로 몽구스는 model의 첫 번째 인자로 컬렉션 이름을 만듭니다. User이면 소문자화 후 복수형으로 바꿔서 users 컬렉션이 됩니다.
 module.exports = {
     user: mongoose.model('User', userSchema),
     classroom: module.exports.classroom = mongoose.model('Classroom', classroomSchema),
     problem: module.exports.problem = mongoose.model('Problem', problemSchema),
     chatting: module.exports.chatting = mongoose.model('Chatting', chattingSchema),
-    judge: module.exports.judge = mongoose.model('Judge', judgeResultSchema)
+    judge: module.exports.judge = mongoose.model('Judge', judgeResultSchema),
+    judgeQueueSchema: module.exports.judge = mongoose.model('JudgeQueue', judgeQueueSchema),
+    judgeServerSchema: module.exports.judge = mongoose.model('JudgeServer', judgeServerSchema)
 };
