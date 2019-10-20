@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 
 const jwt = require('jsonwebtoken');
-const uri = require('../../uri.js');
 const model = require('../../models/model.js');
 const crypto = require('crypto');
 

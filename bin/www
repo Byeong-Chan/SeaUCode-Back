@@ -1,6 +1,22 @@
 #!/usr/bin/env node
 
 /**
+ * mongodb setting
+ */
+
+const mongoose = require('mongoose');
+const config = require('../config');
+
+mongoose.connect(config.mongodbUri, {useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true });
+mongoose.Promise = global.Promise;
+
+const db = mongoose.connection;
+db.on('error', console.error);
+db.once('open', ()=>{
+    console.log('connected to mongodb server')
+});
+
+/**
  * Module dependencies.
  */
 
