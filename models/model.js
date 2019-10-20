@@ -65,7 +65,7 @@ const chattingSchema = new mongoose.Schema({
 });
 
 const judgeResultSchema = new mongoose.Schema({
-    state: {type: Number, enum : ['Pending', 'AC', 'WA', 'TLE', 'MLE', 'RE', 'PE', 'CE']},
+    state: {type: Number, enum : ['Pending', 'AC', 'WA', 'TLE', 'MLE', 'RE', 'PE', 'CE', 'JF']},
     pending_number: {
         type: Number,
         unique: true
