@@ -10,12 +10,13 @@ const stylus = require('stylus');
 const mongoose = require('mongoose');
 const uri = require('./uri.js');
 const secret_key = require('./secret_key');
-
+const cors = require('cors'); // TODO: CORS 를 지우십시오.
 
 /* ----
  TODO: 새로운 라우터경로를 추가해주십시오. */
 const registerRouter = require('./routes/api/user_handling/register');
 const loginRouter = require('./routes/api/login');
+const logedinRouter = require('./routes/api/logedin');
 
 const app = express();
 
@@ -24,6 +25,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 app.set('jwt-secret', secret_key.key);
 
+// TODO: CORS 를 지우십시오.
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -33,6 +36,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/register', registerRouter);
 app.use('/login', loginRouter);
+app.use('/logedin', logedinRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
