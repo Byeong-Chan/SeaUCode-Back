@@ -43,10 +43,12 @@ const problemSchema = new mongoose.Schema({
         type: Number,
         unique: true
     },
-    input_list: [String],
-    output_list: [String],
+    input_list: [{_id: Number, txt: String}],
+    output_list: [{_id: Number, txt: String}],
     spj: Boolean,
-    spj_code: String
+    spj_code: String,
+    memory_limit: Number, // Please "Byte"
+    time_limit: Number // Please "ms"
 });
 
 problemSchema.plugin(autoIncrement.plugin, {
