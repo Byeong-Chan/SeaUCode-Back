@@ -42,7 +42,11 @@ const problemSchema = new mongoose.Schema({
     problem_number: {
         type: Number,
         unique: true
-    }
+    },
+    input_list: [String],
+    output_list: [String],
+    spj: Boolean,
+    spj_code: String
 });
 
 problemSchema.plugin(autoIncrement.plugin, {
