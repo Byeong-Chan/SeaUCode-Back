@@ -14,7 +14,6 @@ router.use(bodyParser.urlencoded({
 
 /* GET home page. */
 router.post('/', function(req, res, next) {
-
     new Promise((resolve, reject) => {
         /* -------------
          TODO: PASSWORD 검증 하는 작업을 여기서 하십시오. 모델에 저장되는 패스워드는 salt가 쳐진 형태입니다. */
@@ -23,11 +22,15 @@ router.post('/', function(req, res, next) {
             reject(new Error('password-error'));
         }
         else {
-            resolve(model.user.find({email: req.body.email}));
+            resolve(model.user.find().where('email').equals(req.body.email));
         }
     }).then(result => {
         if (result.length >= 1) throw new Error('already-register');
-        return;
+        return model.user.find()
+            .where('name').equals(req.body.name);
+    }).then(result => {
+        if(result.length >= 1) throw new Error('not-unique-name');
+        return ;
     }).then(() => {
             var etoken = crypto.randomBytes(32).toString('hex');
             etoken = req.body.email + etoken;
@@ -38,8 +41,9 @@ router.post('/', function(req, res, next) {
 
             save_obj = model.user({
                 email: req.body.email,
+                name: req.body.name,
                 password: hashed_password,
-                email_token: '', // TODO: 나중에 etoken 으로 변경
+                email_token: etoken,
                 email_auth: true, // TODO: 나중에 false 로 변경
                 role: req.body.role,
                 solved_problem: [],
@@ -54,7 +58,7 @@ router.post('/', function(req, res, next) {
                 else {
                     /* ----------
                     TODO: 여기서 이메일을 보내는 작업을 작성하십시오. 비동기 작업이어야 합니다. */
-
+                    console.log('Hello');
 
                     res.status(200).send({message: 'register-success'});
                 }
@@ -72,9 +76,13 @@ router.post('/', function(req, res, next) {
         else if(err.message === "password-error") {
             res.status(403).send({message: 'password-error'});
         }
+        else if(err.message === 'not-unique-name') {
+            res.status(403).send({message: 'not-unique-name'});
+        }
         else {
             res.status(500).send({message: 'server-error'});
         }
+
     });
 });
 
