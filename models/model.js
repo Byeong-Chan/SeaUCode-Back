@@ -103,6 +103,6 @@ module.exports = {
     problem: module.exports.problem = mongoose.model('Problem', problemSchema),
     chatting: module.exports.chatting = mongoose.model('Chatting', chattingSchema),
     judge: module.exports.judge = mongoose.model('Judge', judgeResultSchema),
-    judgeQueueSchema: module.exports.judge = mongoose.model('JudgeQueue', judgeQueueSchema),
-    judgeServerSchema: module.exports.judge = mongoose.model('JudgeServer', judgeServerSchema)
+    judgeQueue: module.exports.judge = mongoose.model('JudgeQueue', judgeQueueSchema),
+    judgeServer: module.exports.judge = mongoose.model('JudgeServer', judgeServerSchema)
 };
