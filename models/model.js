@@ -73,7 +73,8 @@ const judgeResultSchema = new mongoose.Schema({
     code: String,
     language: String,
     user_id: String,
-    problem_number: Number
+    problem_number: Number,
+    ErrorMessage: String
 });
 
 judgeResultSchema.plugin(autoIncrement.plugin, {
