@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 
-const jwt = require('jsonwebtoken')
-const uri = require('../../uri.js');
+const jwt = require('jsonwebtoken');
 const model = require('../../models/model.js');
 const crypto = require('crypto');
 
@@ -19,7 +17,9 @@ router.post('/', function(req, res, next) {
     const {email, password} = req.body;
     const secret = req.app.get('jwt-secret');
 
-    model.user.find({email: email}).then(result => {
+    model.user.find()
+        .where('email').equals(email)
+        .then(result => {
         if(result.length == 0) {
             throw new Error('login-fail'); // 왜 로그인이 실패했는지 알려주면 보안상으로 안좋습니다.
         }
