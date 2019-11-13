@@ -5,16 +5,15 @@ autoIncrement.initialize(mongoose.connection);
 
 const userSchema = new mongoose.Schema({
     role : {type : Number, enum : ['Teacher', 'Student','SuperUser']},
-    email : {type : String , required : true, match : /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, lowercae: true},
+    email : {type : String , required : true, match : /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, lowercae: true, unique: true},
     // email을 받을 때 이미 존재하는 여부 따지고 특정형식을 따르며 소문자로 받아야함
     password : String,
     name : String,
     email_auth : Boolean,
     email_token : String,
-    solved_problems : [String], 
-    classroom_list : [String],
+    solved_problems : [String],
     salt: String,
-    nickname : String
+    nickname : { type: String, unique: true }
 });
 
 const classroomSchema = new mongoose.Schema({
@@ -22,7 +21,6 @@ const classroomSchema = new mongoose.Schema({
     classroom_master : String,
     user_list : [{user_id :String}], 
     classroom_owner : [String],
-    chatting_id : String,
     notice_list : [
         {
             content : String,
