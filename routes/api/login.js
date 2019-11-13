@@ -12,7 +12,6 @@ router.use(bodyParser.urlencoded({
 }));
 
 
-/* GET users listing. */
 router.post('/', function(req, res, next) {
     const {email, password} = req.body;
     const secret = req.app.get('jwt-secret');
@@ -34,7 +33,7 @@ router.post('/', function(req, res, next) {
                         _id: user_info._id,
                         role: user_info.role
                     },
-                    secret,
+                    secret, // TODO: 암호화 방식에 대해서 더 안전하고 토큰을 비밀번호 변경만으로 바꾸는 방식으로 바꿔볼 것
                     {
                         expiresIn: '7d',
                         subject: 'userInfo'
@@ -54,11 +53,11 @@ router.post('/', function(req, res, next) {
         });
     }).catch(err => {
         if(err.message === 'login-fail') {
-            res.status(403).send({message: 'login-fail'});
+            res.status(403).json({message: 'login-fail'});
         }
         else {
             console.log(err);
-            res.status(500).send({message: 'server-error'});
+            res.status(500).json({message: 'server-error'});
         }
     });
 });
