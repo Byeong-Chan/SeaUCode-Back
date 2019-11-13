@@ -15,6 +15,7 @@ const cors = require('cors'); // TODO: 로컬환경 테스트 용도인 CORS 를
 const registerRouter = require('./routes/api/user_handling/register');
 const loginRouter = require('./routes/api/login');
 const loggedInRouter = require('./routes/api/loggedIn');
+const classRouter = require('./routes/api/class_handling/class');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/register', registerRouter);
 app.use('/login', loginRouter);
 app.use('/loggedIn', loggedInRouter);
+app.use('/class', classRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
