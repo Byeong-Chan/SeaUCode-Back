@@ -23,14 +23,6 @@ const authMiddleware = (req, res, next) => {
         }
     );
 
-    // if token is valid, it will respond with its info
-    const respond = (token) => {
-        res.json({
-            success: true,
-            info: token
-        });
-    };
-
     // if it has failed to verify, it will return an error message
     const onError = (error) => {
         res.status(403).json({
