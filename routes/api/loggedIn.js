@@ -21,11 +21,12 @@ router.get('/', function(req, res, next) {
         .select({'_id' : 0})
         .select('email')
         .select('name')
+        .select('nickname')
         .then(result => {
-            res.status(200).send(result);
+            res.status(200).json(result);
         }).catch(err => {
             if(err) {
-                res.status(500).send({message: "server error"});
+                res.status(500).json({message: "server error"});
             }
     });
 });
