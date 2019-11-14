@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     name : String,
     email_auth : Boolean,
     email_token : String,
-    solved_problems : [String],
+    solved_problems : [Number],
     salt: String,
     nickname : { type: String, unique: true }
 });
