@@ -25,7 +25,7 @@ router.post('/createClass', function(req, res, next) {
             const save_classroom = model.classroom({
                 name : req.body.name,
                 classroom_master : result.name,
-                user_list : [{user_id : req.decoded_token._id}],
+                user_list : [req.decoded_token._id],
                 classroom_owner : [result.nickname],
                 notice_list : [],
                 request_student_list: []
