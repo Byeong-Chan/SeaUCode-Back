@@ -58,10 +58,9 @@ router.get('/getClassInfo/:id', function(req, res, next) {
         .then(result => {
             if(!result)
                 throw new Error('not-exist-class');
-            if(result.user_list.find(function(element) { return element.user_id == user_id;}) === undefined)
+            console.log(result);
+            if(result.user_list.find(function(element) { return element == user_id;}) === undefined)
                 throw new Error('class-auth-fail');
-
-            console.log(result.notice_list);
             response.notice = response.notice.concat(result.notice_list.slice(-1));
             return model.chatting.find()
                 .where('classroom_id').equals(class_id);
