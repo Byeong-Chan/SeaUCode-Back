@@ -51,16 +51,16 @@ router.get('/getClassInfo/:id', function(req, res, next) {
     const user_id = req.decoded_token._id;
     const class_id = mongoose.Types.ObjectId(req.params.id);
 
-    const response = { notice : [], chatting: [] };
+    const response = { name: '', notice : [], chatting: [] };
 
     model.classroom.findOne()
         .where('_id').equals(class_id)
         .then(result => {
             if(!result)
                 throw new Error('not-exist-class');
-            console.log(result);
             if(result.user_list.find(function(element) { return element == user_id;}) === undefined)
                 throw new Error('class-auth-fail');
+            response.name = result.name;
             response.notice = response.notice.concat(result.notice_list.slice(-1));
             return model.chatting.find()
                 .where('classroom_id').equals(class_id);
