@@ -36,13 +36,13 @@ router.post('/createClass', function(req, res, next) {
             res.status(200).json({'class_id': result._id.toString()});
         }).catch(err => {
             if(err.message === 'invalid-token') {
-                res.status(400).json('invalid-token');
+                res.status(400).json({message:'invalid-token'});
             }
             else if(err.message === 'role-auth-fail') {
-                res.status(403).json('role-auth-fail');
+                res.status(403).json({message: 'role-auth-fail'});
             }
             else {
-                res.status(500).json('server-error');
+                res.status(500).json({message: 'server-error'});
             }
     });
 });
@@ -69,13 +69,13 @@ router.get('/getClassInfo/:id', function(req, res, next) {
             res.status(200).json(response);
         }).catch(err => {
             if(err.message === 'not-exist-class') {
-                res.status(404).json('not-exist-class');
+                res.status(404).json({message: 'not-exist-class'});
             }
             else if(err.message === 'class-auth-fail') {
-                res.status(403).json('class-auth-fail');
+                res.status(403).json({message: 'class-auth-fail'});
             }
             else {
-                res.status(500).json('server-error');
+                res.status(500).json({message: 'server-error'});
             }
     });
 });

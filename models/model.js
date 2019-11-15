@@ -93,14 +93,12 @@ judgeResultSchema.plugin(autoIncrement.plugin, {
 
 const judgeQueueSchema = new mongoose.Schema({
     server_number: Number,
-    server_ip: String,
     pending_number: Number
 });
 
 const judgeServerSchema = new mongoose.Schema({
     server_number: Number,
     server_ip: String,
-    queue_size: Number,
     state : {type : Number, enum : ['OK', 'Error']}
 });
 

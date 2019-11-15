@@ -17,6 +17,8 @@ const loginRouter = require('./routes/api/login');
 const loggedInRouter = require('./routes/api/loggedIn');
 const classRouter = require('./routes/api/class_handling/class');
 const userRouter = require('./routes/api/user_handling/user');
+const pendingRouter = require('./routes/api/judge_handling/pending');
+const problemsRouter = require('./routes/api/problem_handling/problems');
 
 const app = express();
 
@@ -38,7 +40,9 @@ app.use('/register', registerRouter);
 app.use('/login', loginRouter);
 app.use('/loggedIn', loggedInRouter);
 app.use('/class', classRouter);
-app.use('/user',userRouter);
+app.use('/user', userRouter);
+app.use('/pending', pendingRouter);
+app.use('/problems', problemsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
