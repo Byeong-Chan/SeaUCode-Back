@@ -31,6 +31,7 @@ const classroomSchema = new mongoose.Schema({
 });
 
 const problemSchema = new mongoose.Schema({
+    name: String,
     problem_description : String,
     sample_input : String,
     sample_output : String,
