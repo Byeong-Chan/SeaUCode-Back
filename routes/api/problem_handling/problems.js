@@ -11,8 +11,6 @@ router.use(bodyParser.urlencoded({
     extended: false
 }));
 
-router.use(auth);
-
 router.get('/getProblemDescription/:problemId', (req, res, next) => {
     const problem_id = req.params.problemId;
     model.problem.findOne()
@@ -27,7 +25,7 @@ router.get('/getProblemDescription/:problemId', (req, res, next) => {
                 "memory_limit": result.memory_limit,
                 "spj": result.spj,
                 "difficulty": result.difficulty,
-                "category": result.category,
+                "category": result.Category,
                 "input_description": result.input_description,
                 "output_description": result.output_description
             });
