@@ -49,7 +49,7 @@ router.post('/userRevise',function(req,res,next){
 router.delete('/userDelete',function(req,res,next){
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
 
-    model.user.deletOne({name : user_id})
+    model.user.deleteOne({_id:user_id})
     .then(result =>{
         if(result.nMatched === 0) throw new Error('user do not exist');
         res.status(200).json({message :'user is deleted'});
