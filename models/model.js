@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     name : String,
     email_auth : Boolean,
     email_token : String,
-    solved_problems : [String],
+    solved_problems : [Number],
     salt: String,
     nickname : { type: String, unique: true }
 });
@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
 const classroomSchema = new mongoose.Schema({
     name : String,
     classroom_master : String,
-    user_list : [{user_id :String}], 
+    user_list : [String],
     classroom_owner : [String],
     notice_list : [
         {
@@ -31,6 +31,7 @@ const classroomSchema = new mongoose.Schema({
 });
 
 const problemSchema = new mongoose.Schema({
+    name: String,
     problem_description : String,
     sample_input : String,
     sample_output : String,
@@ -62,7 +63,7 @@ const contestSchema = new mongoose.Schema({
     problems : [String],
     start_time : Date,
     end_time : Date
-}) 
+});
 
 const chattingSchema = new mongoose.Schema({
     send_time : Date, //https://codeday.me/ko/qa/20190319/100309.html => 반환할때 node js에서 반환 값 포맷하는 법을 알려주는 url
@@ -77,6 +78,8 @@ const judgeResultSchema = new mongoose.Schema({
         type: Number,
         unique: true
     },
+    time_usage: Number,
+    memory_usage: Number,
     code: String,
     language: String,
     user_id: String,
@@ -93,14 +96,12 @@ judgeResultSchema.plugin(autoIncrement.plugin, {
 
 const judgeQueueSchema = new mongoose.Schema({
     server_number: Number,
-    server_ip: String,
     pending_number: Number
 });
 
 const judgeServerSchema = new mongoose.Schema({
     server_number: Number,
     server_ip: String,
-    queue_size: Number,
     state : {type : Number, enum : ['OK', 'Error']}
 });
 

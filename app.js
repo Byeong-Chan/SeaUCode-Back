@@ -19,6 +19,10 @@ const classRouter = require('./routes/api/class_handling/class');
 const userRouter = require('./routes/api/user_handling/user');
 const assingmentRouter = require('./routes/api/assingment_handling/assignment');
 const problemRouter = require('./routes/api/problem_handling/problems');
+const pendingRouter = require('./routes/api/judge_handling/pending');
+const deleteRouter = require('./delete');
+const addRouter = require('./add');
+
 const app = express();
 
 // view engine setup
@@ -40,8 +44,11 @@ app.use('/login', loginRouter);
 app.use('/loggedIn', loggedInRouter);
 app.use('/class', classRouter);
 app.use('/user',userRouter);
-app.use('/assignment',assingmentRouter);
-app.use('/problems',problemRouter);
+app.use('/pending', pendingRouter);
+app.use('/problems', problemsRouter);
+app.use('/delete', deleteRouter);
+app.use('/add', addRouter);
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));
