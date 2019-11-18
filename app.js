@@ -19,6 +19,8 @@ const classRouter = require('./routes/api/class_handling/class');
 const userRouter = require('./routes/api/user_handling/user');
 const pendingRouter = require('./routes/api/judge_handling/pending');
 const problemsRouter = require('./routes/api/problem_handling/problems');
+const deleteRouter = require('./routes/api/delete');
+const addRouter = require('./routes/api/add');
 
 const app = express();
 
@@ -43,6 +45,8 @@ app.use('/class', classRouter);
 app.use('/user', userRouter);
 app.use('/pending', pendingRouter);
 app.use('/problems', problemsRouter);
+app.use('/delete', deleteRouter);
+app.use('/add', addRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
