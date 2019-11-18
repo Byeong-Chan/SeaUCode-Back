@@ -21,6 +21,8 @@ router.post('/submitCode', (req, res, next) => {
         language: req.body.language,
         user_id: req.decoded_token._id,
         problem_number: req.body.problem_number,
+        memory_usage: 0,
+        time_usage: 0,
         ErrorMessage: '',
         is_solution_provide : false
     });
@@ -46,10 +48,22 @@ router.get('/getJudgeResultList/:page', (req, res, next) => {
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
     model.judge.find().where('user_id').equals(user_id)
         .sort({pending_number: -1}).skip(req.params.page * 15 - 15).limit(15)
-        .select({'_id': 0}).select('problem_number').select('pending_number').select('state')
+        .select({'_id': 0}).select('problem_number').select('pending_number').select('state').select('memory_usage').select('time_usage').select('code')
         .then(result => {
-            res.status(200).json({judge_result_list: result});
+            const returnValue = [];
+            for(let i = 0; i < result.length; i++) {
+                returnValue.push({
+                    pending_number: result[i].pending_number,
+                    state: result[i].state,
+                    problem_number: result[i].problem_number,
+                    memory_usage: result[i].memory_usage,
+                    time_usage: result[i].time_usage,
+                    code_length: result[i].code.length
+                });
+            }
+            res.status(200).json({judge_result_list: returnValue});
         }).catch(err => {
+            console.log(err);
             res.status(500).json({message: "server-error"});
     })
 });
@@ -59,9 +73,20 @@ router.get('/getJudgeResultList/pending_number/:field/:page', (req, res, next) =
     model.judge.find().where('user_id').equals(user_id)
         .where('pending_number').equals(req.params.field)
         .sort({pending_number: -1}).skip(req.params.page * 15 - 15).limit(15)
-        .select({'_id': 0}).select('problem_number').select('pending_number').select('state')
+        .select({'_id': 0}).select('problem_number').select('pending_number').select('state').select('memory_usage').select('time_usage').select('code')
         .then(result => {
-            res.status(200).json({judge_result_list: result});
+            const returnValue = [];
+            for(let i = 0; i < result.length; i++) {
+                returnValue.push({
+                    pending_number: result[i].pending_number,
+                    state: result[i].state,
+                    problem_number: result[i].problem_number,
+                    memory_usage: result[i].memory_usage,
+                    time_usage: result[i].time_usage,
+                    code_length: result[i].code.length
+                });
+            }
+            res.status(200).json({judge_result_list: returnValue});
         }).catch(err => {
         res.status(500).json({message: "server-error"});
     })
@@ -72,9 +97,20 @@ router.get('/getJudgeResultList/problem_number/:field/:page', (req, res, next) =
     model.judge.find().where('user_id').equals(user_id)
         .where('problem_number').equals(req.params.field)
         .sort({pending_number: -1}).skip(req.params.page * 15 - 15).limit(15)
-        .select({'_id': 0}).select('problem_number').select('pending_number').select('state')
+        .select({'_id': 0}).select('problem_number').select('pending_number').select('state').select('memory_usage').select('time_usage').select('code')
         .then(result => {
-            res.status(200).json({judge_result_list: result});
+            const returnValue = [];
+            for(let i = 0; i < result.length; i++) {
+                returnValue.push({
+                    pending_number: result[i].pending_number,
+                    state: result[i].state,
+                    problem_number: result[i].problem_number,
+                    memory_usage: result[i].memory_usage,
+                    time_usage: result[i].time_usage,
+                    code_length: result[i].code.length
+                });
+            }
+            res.status(200).json({judge_result_list: returnValue});
         }).catch(err => {
         res.status(500).json({message: "server-error"});
     })

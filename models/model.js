@@ -78,6 +78,8 @@ const judgeResultSchema = new mongoose.Schema({
         type: Number,
         unique: true
     },
+    time_usage: Number,
+    memory_usage: Number,
     code: String,
     language: String,
     user_id: String,
