@@ -51,10 +51,10 @@ router.get('/getProblemList/:page', (req, res, next) => {
     });
 });
 
-router.post('/getProblemList/name', (req, res, next) => {
-    const re = new RegExp(req.body.field);
+router.get('/getProblemList/name/:field/:page', (req, res, next) => {
+    const re = new RegExp(req.params.field);
     model.problem.find().where('name').regex(re)
-        .sort({"problem_number": 1}).skip(req.body.page * 15 - 15).limit(15)
+        .sort({"problem_number": 1}).skip(req.params.page * 15 - 15).limit(15)
         .select({"_id":0}).select('name').select('problem_number').select('Category')
         .then(result => {
             res.status(200).json({problem_list: result});
@@ -63,10 +63,10 @@ router.post('/getProblemList/name', (req, res, next) => {
     });
 });
 
-router.post('/getProblemList/category', (req, res, next) => {
-    const re = new RegExp(req.body.field);
+router.get('/getProblemList/category/:field/:page', (req, res, next) => {
+    const re = new RegExp(req.params.field);
     model.problem.find().where('Category').regex(re)
-        .sort({"problem_number": 1}).skip(req.body.page * 15 - 15).limit(15)
+        .sort({"problem_number": 1}).skip(req.params.page * 15 - 15).limit(15)
         .select({"_id":0}).select('name').select('problem_number').select('Category')
         .then(result => {
             res.status(200).json({problem_list: result});
