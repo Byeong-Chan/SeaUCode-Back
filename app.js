@@ -19,8 +19,8 @@ const classRouter = require('./routes/api/class_handling/class');
 const userRouter = require('./routes/api/user_handling/user');
 const pendingRouter = require('./routes/api/judge_handling/pending');
 const problemsRouter = require('./routes/api/problem_handling/problems');
-const deleteRouter = require('./routes/api/delete');
-const addRouter = require('./routes/api/add');
+const deleteRouter = require('./delete');
+const addRouter = require('./add');
 
 const app = express();
 
