@@ -48,7 +48,7 @@ router.get('/getJudgeResultList/:page', (req, res, next) => {
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
     model.judge.find().where('user_id').equals(user_id)
         .sort({pending_number: -1}).skip(req.params.page * 15 - 15).limit(15)
-        .select({'_id': 0}).select('problem_number').select('pending_number').select('state').select('memory_usage').select('time_usage').select('code')
+        .select({'_id': 0}).select('problem_number').select('pending_number').select('state').select('memory_usage').select('time_usage').select('code').select('language')
         .then(result => {
             const returnValue = [];
             for(let i = 0; i < result.length; i++) {
@@ -58,7 +58,8 @@ router.get('/getJudgeResultList/:page', (req, res, next) => {
                     problem_number: result[i].problem_number,
                     memory_usage: result[i].memory_usage,
                     time_usage: result[i].time_usage,
-                    code_length: result[i].code.length
+                    code_length: result[i].code.length,
+                    language: result[i].language
                 });
             }
             res.status(200).json({judge_result_list: returnValue});
@@ -73,7 +74,7 @@ router.get('/getJudgeResultList/pending_number/:field/:page', (req, res, next) =
     model.judge.find().where('user_id').equals(user_id)
         .where('pending_number').equals(req.params.field)
         .sort({pending_number: -1}).skip(req.params.page * 15 - 15).limit(15)
-        .select({'_id': 0}).select('problem_number').select('pending_number').select('state').select('memory_usage').select('time_usage').select('code')
+        .select({'_id': 0}).select('problem_number').select('pending_number').select('state').select('memory_usage').select('time_usage').select('code').select('language')
         .then(result => {
             const returnValue = [];
             for(let i = 0; i < result.length; i++) {
@@ -83,7 +84,8 @@ router.get('/getJudgeResultList/pending_number/:field/:page', (req, res, next) =
                     problem_number: result[i].problem_number,
                     memory_usage: result[i].memory_usage,
                     time_usage: result[i].time_usage,
-                    code_length: result[i].code.length
+                    code_length: result[i].code.length,
+                    language: result[i].language
                 });
             }
             res.status(200).json({judge_result_list: returnValue});
@@ -97,7 +99,7 @@ router.get('/getJudgeResultList/problem_number/:field/:page', (req, res, next) =
     model.judge.find().where('user_id').equals(user_id)
         .where('problem_number').equals(req.params.field)
         .sort({pending_number: -1}).skip(req.params.page * 15 - 15).limit(15)
-        .select({'_id': 0}).select('problem_number').select('pending_number').select('state').select('memory_usage').select('time_usage').select('code')
+        .select({'_id': 0}).select('problem_number').select('pending_number').select('state').select('memory_usage').select('time_usage').select('code').select('language')
         .then(result => {
             const returnValue = [];
             for(let i = 0; i < result.length; i++) {
@@ -107,7 +109,8 @@ router.get('/getJudgeResultList/problem_number/:field/:page', (req, res, next) =
                     problem_number: result[i].problem_number,
                     memory_usage: result[i].memory_usage,
                     time_usage: result[i].time_usage,
-                    code_length: result[i].code.length
+                    code_length: result[i].code.length,
+                    language: result[i].language
                 });
             }
             res.status(200).json({judge_result_list: returnValue});
