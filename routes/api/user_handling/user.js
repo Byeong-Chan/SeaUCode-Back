@@ -45,6 +45,7 @@ router.post('/userRevise',function(req,res,next){
     });
 });
 
+
 router.delete('/userDelete',function(req,res,next){
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
 
