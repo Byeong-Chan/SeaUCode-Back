@@ -24,7 +24,7 @@ router.post('/createClass', function(req, res, next) {
 
             const save_classroom = model.classroom({
                 name : req.body.name,
-                classroom_master : result.name,
+                classroom_master : result.nickname,
                 user_list : [result.nickname],
                 classroom_owner : [result.nickname],
                 notice_list : [],
@@ -100,7 +100,7 @@ router.get('/getNoticeList/:id',function(req,res,next){
     .select('notice_list')
     .then(result => {
         if(result === null) throw new Error('no notice list');
-        res.status(200),json(result);
+        res.status(200).json(result);
     }).catch(err =>{
         if(err.message === 'no notice list'){
             res.status(400).json({message :'no notice list'});
