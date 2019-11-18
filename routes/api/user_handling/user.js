@@ -1,3 +1,4 @@
+  
 const express = require('express');
 const router = express.Router();
 
@@ -44,6 +45,23 @@ router.post('/userRevise',function(req,res,next){
     });
 });
 
+
+router.delete('/userDelete',function(req,res,next){
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
+
+    model.user.deleteOne({_id:user_id})
+    .then(result =>{
+        if(result.nMatched === 0) throw new Error('user do not exist');
+        res.status(200).json({message :'user is deleted'});
+    }).catch(err =>{
+        if(err.message === 'user do not exist'){
+            res.status(400).json({message :'user do not exist'});
+        }
+        else{
+        res.status(500).json({message: 'server-error'});
+        }
+    });
+});
 
 
 module.exports = router;
