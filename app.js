@@ -17,8 +17,8 @@ const loginRouter = require('./routes/api/login');
 const loggedInRouter = require('./routes/api/loggedIn');
 const classRouter = require('./routes/api/class_handling/class');
 const userRouter = require('./routes/api/user_handling/user');
-const assingmentRouter = require('./routes/api/assingment_handling/assignment');
-const problemRouter = require('./routes/api/problem_handling/problems');
+const assignmentRouter = require('./routes/api/assignment_handling/assignment');
+const problemsRouter = require('./routes/api/problem_handling/problems');
 const pendingRouter = require('./routes/api/judge_handling/pending');
 const deleteRouter = require('./delete');
 const addRouter = require('./add');
@@ -46,6 +46,7 @@ app.use('/class', classRouter);
 app.use('/user',userRouter);
 app.use('/pending', pendingRouter);
 app.use('/problems', problemsRouter);
+app.use('/assignment', assignmentRouter);
 app.use('/delete', deleteRouter);
 app.use('/add', addRouter);
 
