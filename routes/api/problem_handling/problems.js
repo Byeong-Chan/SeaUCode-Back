@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 
 const model = require('../../../models/model.js');
 
@@ -75,4 +76,38 @@ router.get('/getProblemList/category/:field/:page', (req, res, next) => {
     });
 });
 
+
+
+//27-2 과제 목록을 요청(GET)받으면 해당 학생의 모든 과제목록을 반환한다.
+router.get('/getAllAssignment',function(req,res,next){
+    const user_id = mongoose.Types.ObjectId(req.decode_token._id);
+
+    model.assignment.find()
+    .where('user_id').equals(user_id)
+    .then(result => {
+        res.status(200).json(result);
+    }).catch(err => {
+        res.status(500).json({message : 'server-error'});
+    });
+
+});
+//28-2 과제 목록을 요청(GET)받으면 해당 학생의 반 id에 속하는 과제 목록을 반환한다.
+router.get('/getClassAssignment/:id',function(req,res,next){
+    
+    const user_id = mongoose.Types.ObjectId(req.decode_token._id);
+    const class_id = mongoose.Types.ObjectId(req.params.id);
+
+    model.classroom.find()
+    .where('_id').equals(class_id)
+    .then(result => {
+        return model.assignment.find()
+        .where('classroom_name').equals(result.name)
+        .where('user_id').equals(user_id);
+    }).then(result =>{
+        res.status(200).json(result);
+    }).catch(err => {
+        res.status(500).json({message : 'server-error'});
+    });
+
+});
 module.exports = router;
