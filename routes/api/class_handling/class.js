@@ -187,7 +187,7 @@ router.post('/addStudentToClass/:id/:nickname',function(req,res,next){
 });
 
 //16-2학생 삭제 요청(POST)이 들어오면 해당 반에 해당 학생을 삭제를 요청하는 API를 만든다.
-router.post('deleteStudentInClass/:id/:nickname',function(req,res,next){
+router.post('/deleteStudentInClass/:id/:nickname',function(req,res,next){
     const class_id = mongoose.Types.ObjectId(req.params.id);
     const nickname = req.params.nickname;
 
