@@ -12,6 +12,7 @@ const cors = require('cors'); // TODO: 로컬환경 테스트 용도인 CORS 를
 
 /* ----
  TODO: 새로운 라우터경로를 추가해주십시오. */
+const adminRouter = require('./routes/api/admin_handling/admin');
 const registerRouter = require('./routes/api/user_handling/register');
 const loginRouter = require('./routes/api/login');
 const loggedInRouter = require('./routes/api/loggedIn');
@@ -39,6 +40,7 @@ app.use(cookieParser());
 app.use(stylus.middleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/admin', adminRouter);
 app.use('/register', registerRouter);
 app.use('/login', loginRouter);
 app.use('/loggedIn', loggedInRouter);
