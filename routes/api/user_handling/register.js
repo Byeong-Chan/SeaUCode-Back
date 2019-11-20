@@ -29,27 +29,29 @@ router.post('/', function(req, res, next) {
         if (result) throw new Error('not-unique-nickname');
         return ;
     }).then(() => {
-            let etoken = crypto.randomBytes(32).toString('hex');
-            etoken = req.body.email + etoken;
-            etoken = crypto.createHash('sha512').update(etoken).digest('hex');
+        if(req.body.role === 3) throw new Error('invalid-action');
 
-            const user_salt = crypto.randomBytes(128).toString('hex');
-            const hashed_password = crypto.createHmac('sha512', user_salt).update(req.body.password).digest('hex');
+        let etoken = crypto.randomBytes(32).toString('hex');
+        etoken = req.body.email + etoken;
+        etoken = crypto.createHash('sha512').update(etoken).digest('hex');
 
-            const save_user = model.user({
-                email: req.body.email,
-                name: req.body.name,
-                nickname: req.body.nickname,
-                password: hashed_password,
-                email_token: etoken,
-                email_auth: true, // TODO: 나중에 false 로 변경
-                role: req.body.role,
-                solved_problem: [],
-                classroom: [],
-                salt: user_salt
-            });
+        const user_salt = crypto.randomBytes(128).toString('hex');
+        const hashed_password = crypto.createHmac('sha512', user_salt).update(req.body.password).digest('hex');
 
-            return save_user.save();
+        const save_user = model.user({
+            email: req.body.email,
+            name: req.body.name,
+            nickname: req.body.nickname,
+            password: hashed_password,
+            email_token: etoken,
+            email_auth: true, // TODO: 나중에 false 로 변경
+            role: req.body.role,
+            solved_problem: [],
+            classroom: [],
+            salt: user_salt
+        });
+
+        return save_user.save();
     }).then(result => {
         console.log(result);
         /* ----------
@@ -72,6 +74,9 @@ router.post('/', function(req, res, next) {
         }
         else if(err._message === 'User validation failed'){
             res.status(403).json({message: 'email-form-error'});
+        }
+        else if(err.message === 'invalid-action') {
+            res.status(403).json({message: 'invalid-action'});
         }
         else {
             res.status(500).json({message: 'server-error'});

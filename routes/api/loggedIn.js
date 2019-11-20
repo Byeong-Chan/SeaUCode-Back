@@ -22,6 +22,7 @@ router.get('/', function(req, res, next) {
         .select('email')
         .select('name')
         .select('nickname')
+        .select('role')
         .then(result => {
             res.status(200).json(result);
         }).catch(err => {
