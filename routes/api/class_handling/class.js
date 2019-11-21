@@ -168,22 +168,21 @@ router.post('/addStudentToClass/:id/:nickname',function(req,res,next){
     const class_id = mongoose.Types.ObjectId(req.params.id);
     const nickname = req.params.nickname;
 
-    model.classroom.update({_id : class_id},{$push :{user_list :nickname}},{update :true})
+    model.classroom.updateOne({_id : class_id},{$push :{user_list :nickname}},{updated :true})
     .then(result => {
-        if(result.nModified === 0) throw new Error ('update failure');
+        if(result.nModified === 0) throw new Error ('update failure :classroom does not match');
         if(result.n===0) throw new Error ('not found');
         res.status(200).json({message : "student is added"});
     }).catch(err =>{
-        if(err.message === 'update failure'){
-            res.status(400),json({message :'update failure'});
+        if(err.message === 'update failure :classroom does not match'){
+            res.status(400).json({message :'update failure :classroom does not match'});
         }else if(err.message === 'not found'){
             res.status(404).json({message : 'not found'});
         }
         else{
             res.status(500).json({message:'server-error'});
         }
-});
-
+    });
 });
 
 //16-2학생 삭제 요청(POST)이 들어오면 해당 반에 해당 학생을 삭제를 요청하는 API를 만든다.
@@ -191,22 +190,23 @@ router.post('/deleteStudentInClass/:id/:nickname',function(req,res,next){
     const class_id = mongoose.Types.ObjectId(req.params.id);
     const nickname = req.params.nickname;
 
-    model.classroom.update({_id : class_id},{$pull :{user_list : nickname}},{update : true})
+    model.classroom.updateOne({_id : class_id},{$pull :{user_list : nickname}},{updated : true})
     .then(result => {
-        if(result.nModified === 0) throw new Error ('update failure');
+        if(result.nModified === 0) throw new Error ('update failure :classroom does not match');
         if(result.n===0) throw new Error ('not found');
         res.status(200).json({message : "student is deleted"});
     }).catch(err =>{
-        if(err.message === 'update failure'){
-            res.status(400),json({message :'update failure'});
+        if(err.message === 'update failure :classroom does not match'){
+            res.status(400).json({message :'update failure :classroom does not match'});
         }else if(err.message === 'not found'){
             res.status(404).json({message : 'not found'});
         }
         else{
             res.status(500).json({message:'server-error'});
         }
+    });
 });
 
-});
+
 
 module.exports = router;
