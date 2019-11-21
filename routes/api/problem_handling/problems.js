@@ -110,4 +110,39 @@ router.get('/getClassAssignment/:id',function(req,res,next){
     });
 
 });
+
+ 
+//20-2
+//넘어오는 body 값들 assignment의 네임, 시작 끝 기간, classroom_name
+router.post('/setAssginment',(req,res,next) => {
+    const user_id = mongoose.Types.ObjectId(req.decode_token._id);
+    
+    model.user.findOne()
+    .where('_id').equals(user_id)
+    .then(result => {
+        if(result ===null) throw new Error('invalid token');
+        const nickname = result.nickname;
+        
+        model.problem.find()
+        .where('problem_number').equals(req.body.problemnumber)
+        .then(result => {
+            const save_assignment = model.assignment({
+                user_id : user_id,
+                name  : req.body.name,
+                problem_list : result.problem_number,
+                start_date : req.body.start_date,
+                end_date : req.body.end_date,
+                classroom_name : req.body.classname,
+                teacher_nickname : nickname
+            });
+        return save_assignment.save();
+        })
+    }).then(result => {    
+        res.status(200).json({message : 'assignment is created'});
+    }).catch(err => {
+        res.status(500).json({message : "server-error"});
+    });
+});
+
+
 module.exports = router;
