@@ -15,25 +15,25 @@ router.use(bodyParser.urlencoded({
     extended: false
 }));
 
-router.use(auth);
+// router.use(auth);
 
-router.use((req, res, next) => {
-    model.user.findOne()
-        .where('_id').equals(mongoose.Types.ObjectId(req.decoded_token._id))
-        .then(result => {
-            if(result === null) throw new Error('none-user');
-            if(result.role !== 3) throw new Error('not-admin');
-            next();
-        }).catch(err => {
-            if(err.message === 'none-user') {
-                res.status(403).json({message:'none-user'});
-            }
-            else if(err.message === 'not-admin') {
-                res.status(403).json({message:'not-admin'});
-            }
-            else res.status(500).json({message:'server-error'});
-    });
-});
+// router.use((req, res, next) => {
+//     model.user.findOne()
+//         .where('_id').equals(mongoose.Types.ObjectId(req.decoded_token._id))
+//         .then(result => {
+//             if(result === null) throw new Error('none-user');
+//             if(result.role !== 3) throw new Error('not-admin');
+//             next();
+//         }).catch(err => {
+//             if(err.message === 'none-user') {
+//                 res.status(403).json({message:'none-user'});
+//             }
+//             else if(err.message === 'not-admin') {
+//                 res.status(403).json({message:'not-admin'});
+//             }
+//             else res.status(500).json({message:'server-error'});
+//     });
+// });
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -133,7 +133,82 @@ router.post('/addProblem', (req, res, next) => {
 });
 
 router.post('/updateProblem', (req, res, next) => {
-    res.status(200).json({message: "success"});
+    const problem_number = req.body.problem_number;
+    const problem_obj =req.body.problem_info;
+    
+    model.problem.findOne()
+    .where('problem_number').equals(problem_number)
+    .then(result => {
+        if(result.input_list._id === problem_obj.input_list._id){
+            return model.problem.updateOne({'problem_number' :problem_number,'input_list._id':problem_obj.input_list._id}, {$set:{input_list : problem_obj.input_list}},{updated : true});
+        }
+        else{
+            return model.problem.updateOne({'problem_number' :problem_number,'input_list._id':problem_obj.input_list._id},{$addToSet: {input_list : {$each : problem_obj.input_list}}},{updated : true});
+        }
+    }).then(result =>{
+        if(result.nModified) throw new Error('inputlist update failure');
+        if(result.n) throw new Error('No problem found');
+    }).then(() =>
+        model.problem.findOne()
+        .where('problem_number').equals(problem_number)
+        .then(result => {
+            if(result.output_list._id === problem_obj.output_list._id){
+                return model.problem.updateOne({'problem_number' :problem_number,'output_list._id':problem_obj.output_list._id}, {$set:{output_list : problem_obj.output_list}},{updated : true});
+            }
+            else{
+                return model.problem.updateOne({'problem_number' :problem_number,'output_list._id':problem_obj.output_list._id},{$addToSet: {output_list : {$each : problem_obj.output_list}}},{updated : true});
+            }
+        }).then(result =>{
+            if(result.nModified) throw new Error('outputlist update failure');
+            if(result.n) throw new Error('No problem found');
+        }).then(()=>{
+            return model.problem.updateOne({problem_number : problem_number},{$addToSet : {category : {$each :problem_obj.category}}},{updated : true});
+        }).then(result => {
+            if(result.nModified) throw new Error('category update failure');
+            if(result.n) throw new Error('No problem found');
+            return model.problem.updateOne({problem_number : problem_number},{$addToSet : {name : {$each : problem_obj.name}}},{updated : true});
+        }).then(result =>{
+            if(result.nModified) throw new Error('name update failure');
+            if(result.n) throw new Error('No problem found');
+            res.status(200).json({message : "update complete"});
+        })
+    ).catch(err => {
+        if(err.message === 'inputlist update failure'){
+            res.status(400).json({message:'inputlist update failure'});
+        }else if(err.message === 'outputlist update failure'){
+            res.status(400).json({message:'outputlist update failure'});
+        }else if(err.message === 'category update failure'){
+            res.status(400).json({message:'categorylist update failure'});
+        }else if(err.message === 'name update failure'){
+            res.status(400).json({message:'name update failure'});
+        }else if(err.message === 'No problem found'){
+            res.status(404).json({message:'problem not found'});
+        }else{
+            res.status(500).json({message:'server-error'});
+        }
+    });
+    
 });
 
+
+router.post('/deleteProblem/',function(req,res,next){
+    const problemnumber = req.body.problem_number;
+    model.problem.updateOne({problem_number : problemnumber},{deleted_yn : true},{updated :true})
+    .then(result => {
+        if(result.nModified === 0) throw new Error('delete failure');
+        if(result.n === 0) throw new Error('not found');
+        res.status(200).json({message:'prboelm is deleted'});
+    }).catch( err =>{
+        if(err.message === 'delete failure'){
+            res.status(400).json({message:'delete failure'});
+        }
+        else if(err.message === 'not found'){
+            res.status(404).json({message :'not found'});
+        }
+        else{
+            res.status(500).json('server-error');
+        }
+
+    });
+});
 module.exports = router;
