@@ -7,7 +7,7 @@
 const mongoose = require('mongoose');
 const config = require('../config');
 
-mongoose.connect(config.mongodbUri, {useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true });
+mongoose.connect(config.mongodbUri, {useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true, useFindAndModify: false });
 mongoose.Promise = global.Promise;
 
 const db = mongoose.connection;
