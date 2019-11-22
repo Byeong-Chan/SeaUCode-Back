@@ -151,8 +151,8 @@ router.get('/getClassUserlist/:id',function(req,res,next){
         if (result === null) throw new Error('no classroom exist');
         return model.user.find({nickname : $in(result.user_list)});
     }).then(result =>{
-        response.name = response.name.concat(result.name.slice(-1));
-        response.nickname = response.nickname.concat(result.nickname.slice(-1));    
+        response.name = result.name;
+        response.nickname = result.nickname;    
     }).then(result => {
         res.status(200).json(response);
     }).catch( err => {
