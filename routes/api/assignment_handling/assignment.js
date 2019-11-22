@@ -26,10 +26,10 @@ router.get('/',function(req,res,next){
         res.status(200).json(response);
     }).catch(err => {
         if(err.message === 'no assignment has been solved'){
-            res.status(400).json('no assigment list exists')
+            res.status(400).json({message:'no assigment list exists'})
         }
         else{
-            res.status(500).json('server-error');
+            res.status(500).json({message:'server-error'});
         }
     });
 });
