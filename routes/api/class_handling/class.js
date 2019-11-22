@@ -129,7 +129,7 @@ router.get('/getClassList',function(req,res,next){
             res.status(400).json({message : 'user do not match'});
         }
         else{
-            res.status(500).json('server-error');
+            res.status(500).json({message:'server-error'});
         }
     });
 
