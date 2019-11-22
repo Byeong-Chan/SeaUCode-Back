@@ -156,7 +156,7 @@ router.post('/setAssignment',(req,res,next) => {
 router.get('/getDescription/:problem_number',function(req,res,next){
 
     const pro_number = req.params.problem_number;
-    const respons = {problem_description1 : [] , sample_input1 : [], sample_output1 : []};
+    const respons = {problem_description : [] , sample_input : [], sample_output : []};
 
 
     model.problem.find()
@@ -164,9 +164,9 @@ router.get('/getDescription/:problem_number',function(req,res,next){
         .then(result => {
             if(result === null) throw new error('no problem has been exist');
 
-            respons.problem_description1 = result.problem_description;
-            respons.sample_input1 = result.sample_input;
-            respons.sample_output1 = result.sample_output;
+            respons.problem_description = result.problem_description;
+            respons.sample_input = result.sample_input;
+            respons.sample_output = result.sample_output;
 
         }).then(result =>{
         res.status(200).json(respons);
