@@ -27,7 +27,7 @@ router.post('/userRevise',function(req,res,next){
     update_info.salt = user_salt;
     update_info.password = hashed_password;
 
-    model.user.update({_id:user_id},{ $set: update_info },{updated :true})
+    model.user.updateOne({_id:user_id},{ $set: update_info },{updated :true})
         .then(result =>{
             if(result.nModified === 0) throw new Error('update failure');
             if(result.n === 0) throw new Error('not found');
