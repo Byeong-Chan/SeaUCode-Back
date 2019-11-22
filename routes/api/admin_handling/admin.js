@@ -6,8 +6,9 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 
 const bodyParser = require('body-parser');
-const path = require('path');
+const fs = require('fs');
 
+const path = require('path');
 const auth = require('../../middleware/auth.js');
 
 router.use(bodyParser.urlencoded({
@@ -48,14 +49,20 @@ router.post('/addProblem', (req, res, next) => {
     upload(req, res, function(err) {
         if(err) {
             console.log(err);
+            res.status(500).json({message:"server-error"});
         }
-        const newInputList = req.body.input_list.concat();
-        const newOutputList = req.body.output_list.concat();
+
+        if(req.body.input_list === undefined) req.body.input_list = [];
+        if(req.body.output_list === undefined) req.body.output_list = [];
+        if(req.body.Category === undefined) req.body.Category = [];
+        const newInputList = [].concat(req.body.input_list);
+        const newOutputList = [].concat(req.body.output_list);
+        const newCategory = [].concat(req.body.Category);
+
         for(let i = 0; i < newInputList.length; i++) {
             newInputList[i] = {"_id" : i + 1, "txt": newInputList[i]};
             newOutputList[i] = {"_id" : i + 1, "txt": newOutputList[i]};
         }
-        console.log(newInputList);
         const addProblem = model.problem({
             name: req.body.name,
             problem_description : req.body.problem_description,
@@ -63,9 +70,9 @@ router.post('/addProblem', (req, res, next) => {
             sample_output : req.body.sample_output,
             input_description : req.body.input_description,
             output_description : req.body.output_description,
-            solution : req.body.solution,
+            solution : '',
             difficulty : req.body.difficulty,
-            Category : req.body.Category,
+            Category : newCategory,
             input_list: newInputList,
             output_list: newOutputList,
             spj: req.body.spj,
@@ -74,14 +81,54 @@ router.post('/addProblem', (req, res, next) => {
             memory_limit: req.body.memory_limit * 1024 * 1024,
             time_limit: req.body.time_limit * 1000
         });
-        console.log(addProblem);
-        /*addProblem.save()
+
+        const cpfile = function(filepath, filename, problem_number) {
+            new Promise((resolve, reject) => {
+                fs.mkdir(path.join(__dirname, `../../../public/assets/${problem_number}/`), { recursive: true }, err => {
+                    if(err) reject(err);
+                    else {
+                        fs.copyFile(filepath, path.join(__dirname, `../../../public/assets/${problem_number}/${filename}`), err => {
+                            if (err) reject(err);
+                            else {
+                                fs.unlink(filepath, err => {
+                                    if (err) reject(err);
+                                    else {
+                                        if (filename.slice(-3) === 'pdf') {
+                                            model.problem.updateOne({problem_number: problem_number},
+                                                {
+                                                    $set: {
+                                                        "solution":
+                                                            path.join(__dirname, `../../../public/assets/${problem_number}/${filename}`)
+                                                    }
+                                                }, {updated :true})
+                                                .then(result => {
+                                                    resolve(result);
+                                                }).catch(err => {
+                                                reject(err);
+                                            });
+                                        }
+                                        else resolve();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }).catch(err => {
+                console.log(err);
+            });
+        };
+
+        addProblem.save()
             .then(result => {
+                for(let i = 0; i < req.files.length; i++) {
+                    cpfile(req.files[i].path, req.files[i].filename, result.problem_number);
+                }
                 res.status(200).json({message: "success"});
             }).catch(err => {
+                console.log(err);
                 res.status(500).json({message: "server-error"});
-        });*/
-        res.status(200).json({message:"success"});
+        });
     });
 });
 
