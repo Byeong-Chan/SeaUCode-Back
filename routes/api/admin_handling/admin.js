@@ -15,25 +15,25 @@ router.use(bodyParser.urlencoded({
     extended: false
 }));
 
-// router.use(auth);
+router.use(auth);
 
-// router.use((req, res, next) => {
-//     model.user.findOne()
-//         .where('_id').equals(mongoose.Types.ObjectId(req.decoded_token._id))
-//         .then(result => {
-//             if(result === null) throw new Error('none-user');
-//             if(result.role !== 3) throw new Error('not-admin');
-//             next();
-//         }).catch(err => {
-//             if(err.message === 'none-user') {
-//                 res.status(403).json({message:'none-user'});
-//             }
-//             else if(err.message === 'not-admin') {
-//                 res.status(403).json({message:'not-admin'});
-//             }
-//             else res.status(500).json({message:'server-error'});
-//     });
-// });
+router.use((req, res, next) => {
+    model.user.findOne()
+        .where('_id').equals(mongoose.Types.ObjectId(req.decoded_token._id))
+        .then(result => {
+            if(result === null) throw new Error('none-user');
+            if(result.role !== 3) throw new Error('not-admin');
+            next();
+        }).catch(err => {
+            if(err.message === 'none-user') {
+                res.status(403).json({message:'none-user'});
+            }
+            else if(err.message === 'not-admin') {
+                res.status(403).json({message:'not-admin'});
+            }
+            else res.status(500).json({message:'server-error'});
+    });
+});
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -206,9 +206,10 @@ router.post('/deleteProblem/',function(req,res,next){
             res.status(404).json({message :'not found'});
         }
         else{
-            res.status(500).json('server-error');
+            res.status(500).json({message :'server-error'});
         }
 
     });
 });
+
 module.exports = router;
