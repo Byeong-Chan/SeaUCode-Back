@@ -95,6 +95,7 @@ router.get('/getNoticeList/:id',function(req,res,next){
 
     const class_id = mongoose.Types.ObjectId(req.params.id);
     
+    
     model.classroom.findOne()
     .where('_id').equals(class_id)
     .select('notice_list')
@@ -141,19 +142,20 @@ router.get('/getClassUserlist/:id',function(req,res,next){
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
     const class_id = mongoose.Types.ObjectId(req.params.id);
     const response = {name : [], nickname : []};
+    
+    
     //질의 순서 반에서 userlist를 가져와서 user_list에 있는 user_id와 user의 _id 비교해서 이름과 닉네임 반환
     model.classroom.findOne()
     .where('_id').equals(class_id)
     .then(result => {
         if (result === null) throw new Error('no classroom exist');
-        return model.user.find.where('_id').eqauls(result.user_list);
+        return model.user.find({nickname : $in(result.user_list)});
     }).then(result =>{
-        response.name = response.name.concat(result.name.slice(-1));
-        response.nickname = response.nickname.concat(result.nickname.slice(-1));    
+        response.name = result.name;
+        response.nickname = result.nickname;    
     }).then(result => {
         res.status(200).json(response);
     }).catch( err => {
-
         if(err.message === 'no classroom exist'){
             res.status(400).json({message : 'class do not exist'});
         }
@@ -207,6 +209,29 @@ router.post('/deleteStudentInClass/:id/:nickname',function(req,res,next){
     });
 });
 
+//17-2 가입 요청 목록에 대해 반 id와 함께 요청 받으면 가입 요청 목록(request_student_list)을 반환한다.
+router.get('/getStuRequest/:id',function(req,res,next){
+    //const user_id = mongoose.Types.ObjectId(req.decode_token._id); //받는값이 이게 맞는지 의문 =>아니면 넘어온 값을 통해 user를 통해 검색해서 작성해야하는지
 
+    //const user_id = mongoose.Types.ObjectId(req.decode_token._id);
+    const class_id = mongoose.Types.ObjectId(req.params.id);
+    const respons = {request_student_list : [] };
+
+
+    model.classroom.find()
+        .where('_id').equals(class_id)
+        .then(result => {
+            if(result === null) throw new error(' no request_student don have list');
+
+            respons.request_student_list = result.request_student_list;
+            console.log(respons)
+
+        }).then(result =>{
+        res.status(200).json(respons);
+    }).catch(err => {
+        res.status(500).json({message : 'server-error'});
+    });
+
+});
 
 module.exports = router;
