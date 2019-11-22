@@ -152,5 +152,29 @@ router.post('/setAssignment',(req,res,next) => {
     });
 });
 
+//22-2 특정 문제 번호를 파라미터로 하여 요청(GET) 받으면 그 문제의 디스크립션과 입출력 예제를 반환한다.
+router.get('/getDescription/:problem_number',function(req,res,next){
+
+    const pro_number = req.params.problem_number;
+    const respons = {problem_description1 : [] , sample_input1 : [], sample_output1 : []};
+
+
+    model.problem.find()
+        .where('problem_number').equals(pro_number)
+        .then(result => {
+            if(result === null) throw new error('no problem has been exist');
+
+            respons.problem_description1 = result.problem_description;
+            respons.sample_input1 = result.sample_input;
+            respons.sample_output1 = result.sample_output;
+
+        }).then(result =>{
+        res.status(200).json(respons);
+    }).catch(err => {
+        res.status(500).json({message : 'server-error'});
+    });
+
+});
+
 
 module.exports = router;
