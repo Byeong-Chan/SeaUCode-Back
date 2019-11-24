@@ -166,7 +166,7 @@ router.get('/getClassUserlist/:id',function(req,res,next){
 }); 
 
 //14-2학생 추가 요청(POST)이 들어오면 해당 반에 해당 학생을 추가하는 API를 만든다.(반 id하고 학생 닉네임)
-router.post('/addStudentToClass/',function(req,res,next){
+router.post('/addStudent/',function(req,res,next){
     const class_id = mongoose.Types.ObjectId(req.body._id);
     const nickname = req.body.nickname;
 
@@ -188,7 +188,7 @@ router.post('/addStudentToClass/',function(req,res,next){
 });
 
 //16-2학생 삭제 요청(POST)이 들어오면 해당 반에 해당 학생을 삭제를 요청하는 API를 만든다.
-router.post('/deleteStudentInClass',function(req,res,next){
+router.post('/deleteStudent',function(req,res,next){
     const class_id = mongoose.Types.ObjectId(req.body.id);
     const nickname = req.body.nickname;
 
