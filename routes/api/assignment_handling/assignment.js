@@ -40,6 +40,7 @@ router.get('/getAllAssignment',function(req,res,next){
 
     model.assignment.find()
     .where('user_id').equals(user_id)
+    .select('name').select('start_date').select('end_date')
     .then(result => {
         res.status(200).json(result);
     }).catch(err => {

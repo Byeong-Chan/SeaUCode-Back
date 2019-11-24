@@ -91,7 +91,7 @@ router.get('/getDescription/:problem_number',function(req,res,next){
     const respons = {problem_description : [] , sample_input : [], sample_output : []};
 
 
-    model.problem.find()
+    model.problem.findOne()
         .where('problem_number').equals(pro_number)
         .then(result => {
             if(result === null) throw new error('no problem has been exist');
