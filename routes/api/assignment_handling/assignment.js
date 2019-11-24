@@ -14,7 +14,7 @@ router.use(auth);
 //15-6 
 router.get('/getAssignmentProblem',function(req,res,next){
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id); 
-    const response = {name : '' , problem : []}
+    const response = {name : '' ,  problem : []}
     
     model.assignment.find()
     .where('user_id').equals(user_id)
