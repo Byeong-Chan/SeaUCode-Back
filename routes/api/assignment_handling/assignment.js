@@ -57,6 +57,7 @@ router.post('/addAssignment',(req,res,next) => {
                     classroom_name : response.classroom_name,
                     teacher_nickname : response.nickname
             });
+            return save_assignment.save();
         }).then(result => {    
             res.status(200).json({message : 'assignment is created'});
         }).catch(err => {
