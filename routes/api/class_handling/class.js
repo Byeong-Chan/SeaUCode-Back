@@ -124,8 +124,6 @@ router.get('/getClassList',function(req,res,next){
         return model.classroom.find()
         .where('user_list').in([result.nickname])
         .select('_id').select('name').select('user_list');
-
-        
     }).then(result => {
         res.status(200).json({class_list : result});
     }).catch(err => {
@@ -143,20 +141,23 @@ router.get('/getClassList',function(req,res,next){
 
 //13-1 해당 반의 반 id를 파라미터에 담아서 해당 반에 속한 학생들의 대한 정보를 요청(GET) 받으면 학생들의 대한 정보(이름, 닉네임)를 반환한다.
 router.get('/getClassUserlist/:id',function(req,res,next){
-
     const class_id = mongoose.Types.ObjectId(req.params.id);
-  
+    const owner_list = [];
     
     model.classroom.findOne()
     .where('_id').equals(class_id)
     .then(result => {
         if (result === null) throw new Error('no classroom exist');
+        for(let i = 0; i < result.classroom_owner.length; i++) {
+            owner_list.push(result.classroom_owner[i]);
+        }
         return model.user.find()
         .where('nickname').in(result.user_list)
         .select({'_id':0}).select('name').select('nickname');
     }).then(result =>{
-        res.status(200).json(result);
+        res.status(200).json(result.filter(e => owner_list.find(target => target === e.nickname) === undefined));
     }).catch( err => {
+        console.log(err);
         if(err.message === 'no classroom exist'){
             res.status(400).json({message : 'class do not exist'});
         }
