@@ -124,7 +124,7 @@ router.get('/getClassList',function(req,res,next){
         
         return model.classroom.find()
         .where('user_list').in([result.nickname])
-        .select({'_id':0}).select('name');
+        .select({'_id':0}).select('name').select('user_list');
         
     }).then(result => {
         
@@ -144,22 +144,19 @@ router.get('/getClassList',function(req,res,next){
 
 //13-1 해당 반의 반 id를 파라미터에 담아서 해당 반에 속한 학생들의 대한 정보를 요청(GET) 받으면 학생들의 대한 정보(이름, 닉네임)를 반환한다.
 router.get('/getClassUserlist/:id',function(req,res,next){
-    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
+
     const class_id = mongoose.Types.ObjectId(req.params.id);
-    const response = {name : [], nickname : []};
+  
     
-    
-    //질의 순서 반에서 userlist를 가져와서 user_list에 있는 user_id와 user의 _id 비교해서 이름과 닉네임 반환
     model.classroom.findOne()
     .where('_id').equals(class_id)
     .then(result => {
         if (result === null) throw new Error('no classroom exist');
-        return model.user.find({nickname : $in(result.user_list)});
+        return model.user.find()
+        .where('nickname').in(result.user_list)
+        .select({'_id':0}).select('name').select('nickname');
     }).then(result =>{
-        response.name = result.name;
-        response.nickname = result.nickname;    
-    }).then(result => {
-        res.status(200).json(response);
+        res.status(200).json(result);
     }).catch( err => {
         if(err.message === 'no classroom exist'){
             res.status(400).json({message : 'class do not exist'});
@@ -268,7 +265,8 @@ router.get('/getClassAssignment/:id',function(req,res,next){
     .then(result => {
         return model.assignment.find()
         .where('classroom_name').equals(result.name)
-        .where('user_id').equals(user_id);
+        .where('user_id').equals(user_id)
+        .select({"_id": 0}).select('name').select('problem_list').select('start_date').select('end_date');
     }).then(result =>{
         res.status(200).json(result);
     }).catch(err => {
