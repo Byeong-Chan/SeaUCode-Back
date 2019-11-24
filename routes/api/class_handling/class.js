@@ -244,6 +244,7 @@ router.get('/getAssignmentList',function(req,res,next){
 
     model.assignment.find()
     .where('user_id').equals(user_id)
+    .select({"_id": 0}).select('name').select('problem_list').select('start_date').select('end_date')
     .then(result => {
         res.status(200).json(result);
     }).catch(err => {
@@ -262,7 +263,8 @@ router.get('/getClassAssignment/:id',function(req,res,next){
     .then(result => {
         return model.assignment.find()
         .where('classroom_name').equals(result.name)
-        .where('user_id').equals(user_id);
+        .where('user_id').equals(user_id)
+        .select({"_id": 0}).select('name').select('problem_list').select('start_date').select('end_date');
     }).then(result =>{
         res.status(200).json(result);
     }).catch(err => {
