@@ -166,7 +166,7 @@ router.get('/getClassUserlist/:id',function(req,res,next){
 }); 
 
 //14-2학생 추가 요청(POST)이 들어오면 해당 반에 해당 학생을 추가하는 API를 만든다.(반 id하고 학생 닉네임)
-router.post('/addStudent/',function(req,res,next){
+router.post('/addStudentToClass',function(req,res,next){
     const class_id = mongoose.Types.ObjectId(req.body._id);
     const nickname = req.body.nickname;
 
@@ -188,7 +188,7 @@ router.post('/addStudent/',function(req,res,next){
 });
 
 //16-2학생 삭제 요청(POST)이 들어오면 해당 반에 해당 학생을 삭제를 요청하는 API를 만든다.
-router.post('/deleteStudent',function(req,res,next){
+router.post('/deleteStudentInClass/',function(req,res,next){
     const class_id = mongoose.Types.ObjectId(req.body.id);
     const nickname = req.body.nickname;
 
@@ -236,7 +236,40 @@ router.get('/getStuRequest/:id',function(req,res,next){
         res.status(500).json({message : 'server-error'});
         }
     });
+});
+
+//27-2 과제 목록을 요청(GET)받으면 해당 학생의 모든 과제목록을 반환한다.
+router.get('/getAssignmentList',function(req,res,next){
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
+
+    model.assignment.find()
+    .where('user_id').equals(user_id)
+    .then(result => {
+        res.status(200).json(result);
+    }).catch(err => {
+        res.status(500).json({message : 'server-error'});
+    });
 
 });
+//28-2 과제 목록을 요청(GET)받으면 해당 학생의 반 id에 속하는 과제 목록을 반환한다.
+router.get('/getClassAssignment/:id',function(req,res,next){
+    
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
+    const class_id = mongoose.Types.ObjectId(req.params.id);
+
+    model.classroom.find()
+    .where('_id').equals(class_id)
+    .then(result => {
+        return model.assignment.find()
+        .where('classroom_name').equals(result.name)
+        .where('user_id').equals(user_id);
+    }).then(result =>{
+        res.status(200).json(result);
+    }).catch(err => {
+        res.status(500).json({message : 'server-error'});
+    });
+
+});
+
 
 module.exports = router;
