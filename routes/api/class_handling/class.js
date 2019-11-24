@@ -120,14 +120,13 @@ router.get('/getClassList',function(req,res,next){
 
     model.user.findOne()
     .where('_id').equals(user_id)
-    .then(result => { 
-        
+    .then(result => {
         return model.classroom.find()
         .where('user_list').in([result.nickname])
-        .select({'_id':0}).select('name').select('user_list');
+        .select('_id').select('name').select('user_list');
+
         
     }).then(result => {
-        
         res.status(200).json({class_list : result});
     }).catch(err => {
         if(err.message === 'user do not match'){
