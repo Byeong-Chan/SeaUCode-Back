@@ -51,7 +51,7 @@ router.post('/addAssignment',(req,res,next) => {
         const save_assignment = model.assignment({
                     user_id : user_id,
                     name  : req.body.name,
-                    problem_list : req.body.problem_number,
+                    problem_list : [req.body.problem_number],
                     start_date : req.body.start_date,
                     end_date : req.body.end_date,
                     classroom_name : response.classroom_name,
@@ -63,7 +63,7 @@ router.post('/addAssignment',(req,res,next) => {
         }).catch(err => {
             res.status(500).json({message : "server-error"});
         });
-    });
+});
 
 
 //27-2 과제 목록을 요청(GET)받으면 해당 학생의 모든 과제목록을 반환한다.
@@ -103,7 +103,6 @@ router.get('/getClassAssignment/:id',function(req,res,next){
 
 //29-2
 router.get('/getAssignmentProblemList/:id',function(req,res,next) {
-
 
     model.assignment.findOne()
     .where('_id').equals(req.params.id)
