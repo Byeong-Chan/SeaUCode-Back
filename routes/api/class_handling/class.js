@@ -116,14 +116,19 @@ router.get('/getNoticeList/:id',function(req,res,next){
 //11-1
 router.get('/getClassList',function(req,res,next){
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
+    const response = {name : [] };
 
-    model.user.find()
+    model.user.findOne()
     .where('_id').equals(user_id)
-    .then(result => {
-        if(result === null) throw new error ('user do not match');
-        return result.classroom_list;
+    .then(result => { 
+        
+        return model.classroom.find()
+        .where('user_list').in([result.nickname])
+        .select({'_id':0}).select('name');
+        
     }).then(result => {
-        res.status(200).json(result);
+        
+        res.status(200).json({class_list : result});
     }).catch(err => {
         if(err.message === 'user do not match'){
             res.status(400).json({message : 'user do not match'});
@@ -263,8 +268,7 @@ router.get('/getClassAssignment/:id',function(req,res,next){
     .then(result => {
         return model.assignment.find()
         .where('classroom_name').equals(result.name)
-        .where('user_id').equals(user_id)
-        .select({"_id": 0}).select('name').select('problem_list').select('start_date').select('end_date');
+        .where('user_id').equals(user_id);
     }).then(result =>{
         res.status(200).json(result);
     }).catch(err => {
