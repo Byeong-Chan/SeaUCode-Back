@@ -11,7 +11,6 @@ const auth = require('../../middleware/auth.js');
 router.use(bodyParser.urlencoded({
     extended: false
 }));
-router.use(auth);
 
 router.get('/getProblemDescription/:problemId', (req, res, next) => {
     const problem_id = req.params.problemId;
@@ -79,6 +78,7 @@ router.get('/getProblemList/category/:field/:page', (req, res, next) => {
 
 
 
+router.use(auth);
 
  
 //20-2
