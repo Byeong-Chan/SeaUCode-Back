@@ -15,8 +15,9 @@ router.use(bodyParser.urlencoded({
 router.use(auth);
 
 router.post('/submitCode', (req, res, next) => {
-    const save_judge_result = model.judge({
+    const judge_obj = {
         state: 1,
+        pending_date: Date.now(),
         code: req.body.code,
         language: req.body.language,
         user_id: req.decoded_token._id,
@@ -24,23 +25,27 @@ router.post('/submitCode', (req, res, next) => {
         memory_usage: 0,
         time_usage: 0,
         ErrorMessage: '',
-        is_solution_provide : false
-    });
+        is_solution_provide : false,
+        user_nickname: ''
+    };
 
-    save_judge_result.save()
-        .then(result => {
-            // TODO: 여기서 Judge Queue 만들것 지금 당장은 서버가 1개만 있다고 가정 후 코딩
-            const save_judge_queue = model.judgeQueue({
-                server_number: 1,
-                pending_number: result.pending_number
-            });
-            return save_judge_queue.save();
-        }).then(result => {
-            console.log(result);
-            res.status(200).json({message: 'submit-success'});
-        }).catch(err => {
-            console.log(err);
-            res.status(500).json('server-error');
+    model.user.findOne().where('_id').equals(mongoose.Types.ObjectId(req.decoded_token._id)).then(result => {
+        if(result === null) throw new Error('user-not-found');
+        judge_obj.user_nickname = result.nickname;
+        const save_judge_result = model.judge(judge_obj);
+        return save_judge_result.save()
+    }).then(result => {
+        // TODO: 여기서 Judge Queue 만들것 지금 당장은 서버가 1개만 있다고 가정 후 코딩
+        const save_judge_queue = model.judgeQueue({
+            server_number: 1,
+            pending_number: result.pending_number
+        });
+        return save_judge_queue.save();
+    }).then(result => {
+        res.status(200).json({message: 'submit-success'});
+    }).catch(err => {
+        if(err.message === 'user-not-found') res.status(404).json({message: 'user-not-found'});
+        else res.status(500).json('server-error');
     });
 });
 
