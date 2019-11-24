@@ -172,12 +172,32 @@ router.post('/addStudentToClass',function(req,res,next){
     const class_id = mongoose.Types.ObjectId(req.body.id);
     const nickname = req.body.nickname;
 
-    model.classroom.updateOne({_id : class_id},{$push :{user_list :nickname}},{updated :true})
-    .then(result => {
+    model.user.findOne({nickname: nickname}).then(result => {
+        if(result === null) throw new Error('add-student-not-found');
+        return model.user.findOne({_id: mongoose.Types.ObjectId(req.decoded_token._id)});
+    }).then(result => {
+        if(result === null) throw new Error('user-not-found');
+        return model.classroom.updateOne({
+                _id : class_id,
+                classroom_owner: {$eq : result.nickname}
+            },
+            { $addToSet :{user_list :nickname} },
+            { updated :true }
+        );
+    }).then(result => {
         if(result.nModified === 0) throw new Error ('update failure :classroom does not match');
-        if(result.n===0) throw new Error ('not found');
+        if(result.n === 0) throw new Error ('not found');
         res.status(200).json({message : "student is added"});
     }).catch(err =>{
+        if(err.message === 'add-student-not-found') {
+            res.status(404).json({message: 'add-student-not-found'});
+        }
+        if(err.message === 'user-not-found') {
+            res.status(403).json({message: 'user-not-found'});
+        }
+        if(err.message === 'class-auth-fail') {
+            res.status(403).json({message: 'class-auth-fail'});
+        }
         if(err.message === 'update failure :classroom does not match'){
             res.status(400).json({message :'update failure :classroom does not match'});
         }else if(err.message === 'not found'){
@@ -191,11 +211,19 @@ router.post('/addStudentToClass',function(req,res,next){
 
 //16-2학생 삭제 요청(POST)이 들어오면 해당 반에 해당 학생을 삭제를 요청하는 API를 만든다.
 router.post('/deleteStudentInClass/',function(req,res,next){
-    const class_id = mongoose.Types.ObjectId(req.body.id);
+    const class_id = mongoose.Types.ObjectId(req.body._id);
     const nickname = req.body.nickname;
 
-    model.classroom.updateOne({_id : class_id},{$pull :{user_list : nickname}},{updated : true})
-    .then(result => {
+    model.user.findOne({_id: mongoose.Types.ObjectId(req.decoded_token._id)}).then(result => {
+        if (result === null) throw new Error('user-not-found');
+        return model.classroom.updateOne({
+                _id: class_id,
+                classroom_owner: {$ne: nickname, $eq: result.nickname}
+            },
+            {$pull: {user_list: nickname}},
+            {updated: true}
+        );
+    }).then(result => {
         if(result.nModified === 0) throw new Error ('update failure :classroom does not match');
         if(result.n===0) throw new Error ('not found');
         res.status(200).json({message : "student is deleted"});
@@ -248,9 +276,14 @@ router.get('/getAssignmentList',function(req,res,next){
     .where('user_id').equals(user_id)
     .select({"_id": 0}).select('name').select('problem_list').select('start_date').select('end_date')
     .then(result => {
-        res.status(200).json(result);
+        if(result === null) throw new Error('no assignment exists');
+        res.status(200).json({assignment_list : reuslt});
     }).catch(err => {
+        if(err.message ==='no assignment exists'){
+            res.status(400).json({message : 'no assignment exists'});
+        }else{
         res.status(500).json({message : 'server-error'});
+        }
     });
 
 });
