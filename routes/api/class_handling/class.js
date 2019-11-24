@@ -221,7 +221,7 @@ router.get('/getStuRequest/:id',function(req,res,next){
     model.classroom.find()
         .where('_id').equals(class_id)
         .then(result => {
-            if(result === null) throw new error(' no request_student don have list');
+            if(result === null) throw new error('no request_student do not have list');
 
             respons.request_student_list = result.request_student_list;
             console.log(respons)
@@ -229,7 +229,12 @@ router.get('/getStuRequest/:id',function(req,res,next){
         }).then(result =>{
         res.status(200).json(respons);
     }).catch(err => {
+        if(err.message === 'no request_student do not have list'){
+            res.status(400).json({message : "class do not exist"});
+        }
+        else{
         res.status(500).json({message : 'server-error'});
+        }
     });
 
 });
