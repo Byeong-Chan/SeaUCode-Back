@@ -290,6 +290,7 @@ router.get('/getAssignmentList',function(req,res,next){
 //28-2 과제 목록을 요청(GET)받으면 해당 학생의 반 id에 속하는 과제 목록을 반환한다.
 router.get('/getClassAssignment/:id',function(req,res,next){
     
+    
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
     const class_id = mongoose.Types.ObjectId(req.params.id);
 

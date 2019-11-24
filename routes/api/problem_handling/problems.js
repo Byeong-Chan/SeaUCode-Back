@@ -141,6 +141,7 @@ router.post('/addAssignment',(req,res,next) => {
         res.status(200).json({message : 'assignment is created'});
     }).catch(err => {
         res.status(500).json({message : "server-error"});
+        
     });
 });
 
