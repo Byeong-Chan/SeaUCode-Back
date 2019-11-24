@@ -11,9 +11,9 @@ router.use(bodyParser.urlencoded({
     extended: false
 }));
 
-//15-6 유저가 특정 학생이 푼 문제와 과제 정보를 요청하면(GET) 그 요청에 따라 푼 문제와 과제 정보를 모두 반환한다.
-router.get('/',function(req,res,next){
-    const user_id = mongoose.Types.ObjectId(req.decode_token._id); //받는값이 이게 맞는지 의문 =>아니면 넘어온 값을 통해 user를 통해 검색해서 작성해야하는지
+//15-6 
+router.get('/getAssignmentProblem',function(req,res,next){
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id); 
     const response = {name : [] , problem : []}
     
     model.assignment.find()
@@ -26,10 +26,28 @@ router.get('/',function(req,res,next){
         res.status(200).json(response);
     }).catch(err => {
         if(err.message === 'no assignment has been solved'){
-            res.status(400).json({message:'no assigment list exists'})
+            res.status(400).json({message:'no assigment list exists'});
         }
         else{
             res.status(500).json({message:'server-error'});
+        }
+    });
+});
+
+//29-2
+router.get('/getAssignmentProblemList/:id',function(req,res,next) {
+
+
+    model.assignment.findOne()
+    .where('_id').equals(req.params.id)
+    .then(result => {
+        if(result === null) throw new Error ('no assignment exist');
+        res.status(200).json(result.problem_list);
+    }).catch(err => {
+        if(err.message === 'no assignment exist'){
+            res.status(400).json({message : "no assigment exist" });
+        }else{
+            res.status(500).json({message : "server-error"});
         }
     });
 });

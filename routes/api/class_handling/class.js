@@ -166,9 +166,9 @@ router.get('/getClassUserlist/:id',function(req,res,next){
 }); 
 
 //14-2학생 추가 요청(POST)이 들어오면 해당 반에 해당 학생을 추가하는 API를 만든다.(반 id하고 학생 닉네임)
-router.post('/addStudentToClass/:id/:nickname',function(req,res,next){
-    const class_id = mongoose.Types.ObjectId(req.params.id);
-    const nickname = req.params.nickname;
+router.post('/addStudent/',function(req,res,next){
+    const class_id = mongoose.Types.ObjectId(req.body._id);
+    const nickname = req.body.nickname;
 
     model.classroom.updateOne({_id : class_id},{$push :{user_list :nickname}},{updated :true})
     .then(result => {
@@ -188,9 +188,9 @@ router.post('/addStudentToClass/:id/:nickname',function(req,res,next){
 });
 
 //16-2학생 삭제 요청(POST)이 들어오면 해당 반에 해당 학생을 삭제를 요청하는 API를 만든다.
-router.post('/deleteStudentInClass/:id/:nickname',function(req,res,next){
-    const class_id = mongoose.Types.ObjectId(req.params.id);
-    const nickname = req.params.nickname;
+router.post('/deleteStudent',function(req,res,next){
+    const class_id = mongoose.Types.ObjectId(req.body.id);
+    const nickname = req.body.nickname;
 
     model.classroom.updateOne({_id : class_id},{$pull :{user_list : nickname}},{updated : true})
     .then(result => {
@@ -221,7 +221,7 @@ router.get('/getStuRequest/:id',function(req,res,next){
     model.classroom.find()
         .where('_id').equals(class_id)
         .then(result => {
-            if(result === null) throw new error(' no request_student don have list');
+            if(result === null) throw new error('no request_student do not have list');
 
             respons.request_student_list = result.request_student_list;
             console.log(respons)
@@ -229,7 +229,12 @@ router.get('/getStuRequest/:id',function(req,res,next){
         }).then(result =>{
         res.status(200).json(respons);
     }).catch(err => {
+        if(err.message === 'no request_student do not have list'){
+            res.status(400).json({message : "class do not exist"});
+        }
+        else{
         res.status(500).json({message : 'server-error'});
+        }
     });
 
 });
