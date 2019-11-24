@@ -168,16 +168,36 @@ router.get('/getClassUserlist/:id',function(req,res,next){
 }); 
 
 //14-2학생 추가 요청(POST)이 들어오면 해당 반에 해당 학생을 추가하는 API를 만든다.(반 id하고 학생 닉네임)
-router.post('/addStudentToClass',function(req,res,next){
+router.post('/addStudentToClass',function(req, res, next) {
     const class_id = mongoose.Types.ObjectId(req.body._id);
     const nickname = req.body.nickname;
 
-    model.classroom.updateOne({_id : class_id},{$push :{user_list :nickname}},{updated :true})
-    .then(result => {
+    model.user.findOne({nickname: nickname}).then(result => {
+        if(result === null) throw new Error('add-student-not-found');
+        return model.user.findOne({_id: mongoose.Types.ObjectId(req.decoded_token._id)});
+    }).then(result => {
+        if(result === null) throw new Error('user-not-found');
+        return model.classroom.updateOne({
+                _id : class_id,
+                classroom_owner: {$eq : result.nickname}
+            },
+            { $addToSet :{user_list :nickname} },
+            { updated :true }
+        );
+    }).then(result => {
         if(result.nModified === 0) throw new Error ('update failure :classroom does not match');
-        if(result.n===0) throw new Error ('not found');
+        if(result.n === 0) throw new Error ('not found');
         res.status(200).json({message : "student is added"});
     }).catch(err =>{
+        if(err.message === 'add-student-not-found') {
+            res.status(404).json({message: 'add-student-not-found'});
+        }
+        if(err.message === 'user-not-found') {
+            res.status(403).json({message: 'user-not-found'});
+        }
+        if(err.message === 'class-auth-fail') {
+            res.status(403).json({message: 'class-auth-fail'});
+        }
         if(err.message === 'update failure :classroom does not match'){
             res.status(400).json({message :'update failure :classroom does not match'});
         }else if(err.message === 'not found'){
@@ -191,11 +211,19 @@ router.post('/addStudentToClass',function(req,res,next){
 
 //16-2학생 삭제 요청(POST)이 들어오면 해당 반에 해당 학생을 삭제를 요청하는 API를 만든다.
 router.post('/deleteStudentInClass/',function(req,res,next){
-    const class_id = mongoose.Types.ObjectId(req.body.id);
+    const class_id = mongoose.Types.ObjectId(req.body._id);
     const nickname = req.body.nickname;
 
-    model.classroom.updateOne({_id : class_id},{$pull :{user_list : nickname}},{updated : true})
-    .then(result => {
+    model.user.findOne({_id: mongoose.Types.ObjectId(req.decoded_token._id)}).then(result => {
+        if (result === null) throw new Error('user-not-found');
+        return model.classroom.updateOne({
+                _id: class_id,
+                classroom_owner: {$ne: nickname, $eq: result.nickname}
+            },
+            {$pull: {user_list: nickname}},
+            {updated: true}
+        );
+    }).then(result => {
         if(result.nModified === 0) throw new Error ('update failure :classroom does not match');
         if(result.n===0) throw new Error ('not found');
         res.status(200).json({message : "student is deleted"});
