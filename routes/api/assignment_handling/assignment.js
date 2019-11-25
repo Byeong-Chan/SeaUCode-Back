@@ -65,6 +65,29 @@ router.get('/getAssignmentProgress/:assignment_id', function(req, res, next) {
     });
 });
 
+//28-2
+router.get('/getMyAssignmentList/:class_id', function(req, res, next) {
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
+
+    model.user.findOne().where('_id').equals(user_id).then(result => {
+        if(result === null) throw new Error('invalid-token');
+        return model.assignment.find().where('user_nickname').equals(result.nickname)
+            .where('class_id').equals(req.params.class_id);
+    }).then(result => {
+        const response = result.concat();
+        for(let i = 0; i < response.length; i++) {
+            response[i]._doc.start_date = response[i]._doc.start_date.getTime();
+            response[i]._doc.end_date = response[i]._doc.end_date.getTime();
+        }
+        res.status(200).json({assignment_list: result});
+    }).catch(err => {
+        if(err.message === 'invalid-token') {
+            res.status(403).json({message: 'invalid-token'});
+        }
+        else res.status(500).json({message: 'server-error'});
+    })
+});
+
 //29-2
 router.get('/getAssignmentProblemList/:id',function(req,res,next) {
     model.assignment.findOne()
