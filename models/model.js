@@ -78,11 +78,13 @@ const judgeResultSchema = new mongoose.Schema({
         type: Number,
         unique: true
     },
+    pending_date: Date,
     time_usage: Number,
     memory_usage: Number,
     code: String,
     language: String,
     user_id: String,
+    user_nickname: String,
     problem_number: Number,
     ErrorMessage: String,
     is_solution_provide : Boolean
@@ -115,13 +117,14 @@ const codetimeSchema = new mongoose.Schema({
 });
 
 const assignmentSchema = new mongoose.Schema({
-    user_id : String,
+    user_nickname : String,
     name : String,
     problem_list : [Number],
     start_date : Date,
     end_date : Date,
     classroom_name : String,
-    teacher_nickname : String
+    teacher_nickname : String,
+    class_id: String
 });
 
 const userFeedbackSchema = new mongoose.Schema({
