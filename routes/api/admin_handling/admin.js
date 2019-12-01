@@ -35,6 +35,23 @@ router.use((req, res, next) => {
     });
 });
 
+router.get('/getProblem/:id', (req, res, next) => {
+    const problem_number = req.params.id;
+    model.problem.findOne().where('problem_number').equals(problem_number).select({_id: 0, spj_code: 0})
+        .then(result => {
+            if(result === null) throw new Error('none-problem');
+            const response = result._doc;
+            response.io_length = response.input_list.length;
+            response.input_list = undefined;
+            response.output_list = undefined;
+            res.status(200).json(response);
+        }).catch(err => {
+            if(err.message === 'none-problem') {
+                res.status(404).json({message: 'none-problem'});
+            }
+    })
+});
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, __dirname);
@@ -50,6 +67,7 @@ router.post('/addProblem', (req, res, next) => {
         if(err) {
             console.log(err);
             res.status(500).json({message:"server-error"});
+            return;
         }
 
         if(req.body.input_list === undefined) req.body.input_list = [];
@@ -78,8 +96,8 @@ router.post('/addProblem', (req, res, next) => {
             spj: req.body.spj,
             spj_code: req.body.spj_code,
             delete_yn : false,
-            memory_limit: req.body.memory_limit * 1024 * 1024,
-            time_limit: req.body.time_limit * 1000
+            memory_limit: parseInt(req.body.memory_limit) * 1024 * 1024,
+            time_limit: parseInt(req.body.time_limit) * 1000
         });
 
         const cpfile = function(filepath, filename, problem_number) {
@@ -133,61 +151,121 @@ router.post('/addProblem', (req, res, next) => {
 });
 
 router.post('/updateProblem', (req, res, next) => {
-    const problem_number = req.body.problem_number;
-    const problem_obj =req.body.problem_info;
-    
-    model.problem.findOne()
-    .where('problem_number').equals(problem_number)
-    .then(result => {
-        if(result.input_list._id === problem_obj.input_list._id){
-            return model.problem.updateOne({'problem_number' :problem_number,'input_list._id':problem_obj.input_list._id}, {$set:{input_list : problem_obj.input_list}},{updated : true});
+    upload(req, res, function(err) {
+        if(err) {
+            console.log(err);
+            res.status(500).json('server-error');
+            return;
         }
-        else{
-            return model.problem.updateOne({'problem_number' :problem_number,'input_list._id':problem_obj.input_list._id},{$addToSet: {input_list : {$each : problem_obj.input_list}}},{updated : true});
+
+        if(req.body.input_list === undefined) req.body.input_list = [];
+        if(req.body.output_list === undefined) req.body.output_list = [];
+        if(req.body.input_list_number === undefined) req.body.input_list_number = [];
+        if(req.body.output_list_number === undefined) req.body.output_list_number = [];
+        if(req.body.Category === undefined) req.body.Category = [];
+        const newInputList = [].concat(req.body.input_list);
+        const newOutputList = [].concat(req.body.output_list);
+        const newInputListNumber = [].concat(req.body.input_list_number);
+        const newOutputListNumber = [].concat(req.body.output_list_number);
+        const newCategory = [].concat(req.body.Category);
+        for(let i = 0; i < newInputList.length; i++) {
+            newInputList[i] = {"_id" : parseInt(newInputListNumber[i]), "txt": newInputList[i]};
+            newOutputList[i] = {"_id" : parseInt(newOutputListNumber[i]), "txt": newOutputList[i]};
         }
-    }).then(result =>{
-        if(result.nModified) throw new Error('inputlist update failure');
-        if(result.n) throw new Error('No problem found');
-    }).then(() =>
-        model.problem.findOne()
-        .where('problem_number').equals(problem_number)
-        .then(result => {
-            if(result.output_list._id === problem_obj.output_list._id){
-                return model.problem.updateOne({'problem_number' :problem_number,'output_list._id':problem_obj.output_list._id}, {$set:{output_list : problem_obj.output_list}},{updated : true});
-            }
-            else{
-                return model.problem.updateOne({'problem_number' :problem_number,'output_list._id':problem_obj.output_list._id},{$addToSet: {output_list : {$each : problem_obj.output_list}}},{updated : true});
-            }
-        }).then(result =>{
-            if(result.nModified) throw new Error('outputlist update failure');
-            if(result.n) throw new Error('No problem found');
-        }).then(()=>{
-            return model.problem.updateOne({problem_number : problem_number},{$addToSet : {category : {$each :problem_obj.category}}},{updated : true});
-        }).then(result => {
-            if(result.nModified) throw new Error('category update failure');
-            if(result.n) throw new Error('No problem found');
-            return model.problem.updateOne({problem_number : problem_number},{$addToSet : {name : {$each : problem_obj.name}}},{updated : true});
-        }).then(result =>{
-            if(result.nModified) throw new Error('name update failure');
-            if(result.n) throw new Error('No problem found');
-            res.status(200).json({message : "update complete"});
-        })
-    ).catch(err => {
-        if(err.message === 'inputlist update failure'){
-            res.status(400).json({message:'inputlist update failure'});
-        }else if(err.message === 'outputlist update failure'){
-            res.status(400).json({message:'outputlist update failure'});
-        }else if(err.message === 'category update failure'){
-            res.status(400).json({message:'categorylist update failure'});
-        }else if(err.message === 'name update failure'){
-            res.status(400).json({message:'name update failure'});
-        }else if(err.message === 'No problem found'){
-            res.status(404).json({message:'problem not found'});
-        }else{
-            res.status(500).json({message:'server-error'});
-        }
+
+
+        const cpfile = function(filepath, filename, problem_number) {
+            new Promise((resolve, reject) => {
+                fs.mkdir(path.join(__dirname, `../../../public/assets/${problem_number}/`), { recursive: true }, err => {
+                    if(err) reject(err);
+                    else {
+                        fs.copyFile(filepath, path.join(__dirname, `../../../public/assets/${problem_number}/${filename}`), err => {
+                            if (err) reject(err);
+                            else {
+                                fs.unlink(filepath, err => {
+                                    if (err) reject(err);
+                                    else {
+                                        if (filename.slice(-3) === 'pdf') {
+                                            model.problem.updateOne({problem_number: problem_number},
+                                                {
+                                                    $set: {
+                                                        "solution":
+                                                            path.join(__dirname, `../../../public/assets/${problem_number}/${filename}`)
+                                                    }
+                                                }, {updated :true})
+                                                .then(result => {
+                                                    resolve(result);
+                                                }).catch(err => {
+                                                reject(err);
+                                            });
+                                        }
+                                        else resolve();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }).catch(err => {
+                console.log(err);
+            });
+        };
+
+        model.problem.findOne().where('problem_number').equals(req.body.problem_number)
+            .then(result => {
+                if(result === null) throw new Error('none-problem');
+                const io_length = result.input_list.length;
+                const changeObj = result._doc;
+                for(let i = 0; i < newInputList.length; i++) {
+                    const posi = changeObj.input_list.findIndex(elem => elem._id === newInputList[i]._id);
+                    if(posi === -1) {
+                        changeObj.input_list.push(newInputList[i]);
+                    }
+                    else {
+                        changeObj.input_list[posi] = newInputList[i];
+                    }
+
+                    const poso = changeObj.output_list.findIndex(elem => elem._id === newOutputList[i]._id);
+                    if(poso === -1) {
+                        changeObj.output_list.push(newOutputList[i]);
+                    }
+                    else {
+                        changeObj.output_list[poso] = newOutputList[i];
+                    }
+                }
+
+                if(req.body.spj && req.body.spj_code !== undefined) {
+                    changeObj.spj = true;
+                    changeObj.spj_code = req.body.spj_code;
+                }
+
+                changeObj.name = req.body.name;
+                changeObj.problem_description = req.body.problem_description;
+                changeObj.sample_input = req.body.sample_input;
+                changeObj.sample_output = req.body.sample_output;
+                changeObj.input_description = req.body.input_description;
+                changeObj.output_description = req.body.output_description;
+                changeObj.difficulty = req.body.difficulty;
+                changeObj.Category = newCategory;
+                changeObj.memory_limit = parseInt(req.body.memory_limit) * 1024 * 1024;
+                changeObj.time_limit = parseInt(req.body.time_limit) * 1000;
+
+                for(let i = 0; i < io_length - req.body.io_length; i++) {
+                    changeObj.input_list.splice(-1);
+                    changeObj.output_list.splice(-1);
+                }
+
+                return model.problem.updateOne({"problem_number": req.body.problem_number}, changeObj);
+            }).then(result => {
+                for(let i = 0; i < req.files.length; i++) {
+                    cpfile(req.files[i].path, req.files[i].filename, parseInt(req.body.problem_number));
+                }
+                res.status(200).json({message: "success"});
+            }).catch(result => {
+                console.log(err);
+                res.status(500).json({message: "server-error"});
+        });
     });
-    
 });
 
 
