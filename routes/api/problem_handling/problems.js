@@ -16,6 +16,7 @@ router.get('/getProblemDescription/:problemId', (req, res, next) => {
     const problem_id = req.params.problemId;
     model.problem.findOne()
         .where('problem_number').equals(problem_id)
+        .where('delete_yn').equals(false)
         .then(result => {
             if(result == null) throw new Error('not-exist-problem');
             res.status(200).json({
@@ -43,7 +44,8 @@ router.get('/getProblemDescription/:problemId', (req, res, next) => {
 
 router.get('/getProblemList/:page', (req, res, next) => {
     const page = req.params.page;
-    model.problem.find().sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
+    model.problem.find()
+        .where('delete_yn').equals(false).sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
         .select({"_id": 0}).select('name').select('problem_number').select('Category')
         .then(result => {
             res.status(200).json({problem_list: result});
@@ -55,6 +57,7 @@ router.get('/getProblemList/:page', (req, res, next) => {
 router.get('/getProblemList/name/:field/:page', (req, res, next) => {
     const re = new RegExp(req.params.field);
     model.problem.find().where('name').regex(re)
+        .where('delete_yn').equals(false)
         .sort({"problem_number": 1}).skip(req.params.page * 15 - 15).limit(15)
         .select({"_id":0}).select('name').select('problem_number').select('Category')
         .then(result => {
@@ -67,6 +70,7 @@ router.get('/getProblemList/name/:field/:page', (req, res, next) => {
 router.get('/getProblemList/category/:field/:page', (req, res, next) => {
     const re = new RegExp(req.params.field);
     model.problem.find().where('Category').regex(re)
+        .where('delete_yn').equals(false)
         .sort({"problem_number": 1}).skip(req.params.page * 15 - 15).limit(15)
         .select({"_id":0}).select('name').select('problem_number').select('Category')
         .then(result => {
@@ -126,6 +130,7 @@ router.get('/getDescription/:problem_number',function(req,res,next){
 
     model.problem.findOne()
         .where('problem_number').equals(pro_number)
+        .where('delete_yn').equals(false)
         .then(result => {
             if(result === null) throw new Error('no problem has been exist');
 
