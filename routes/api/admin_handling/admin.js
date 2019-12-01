@@ -271,7 +271,7 @@ router.post('/updateProblem', (req, res, next) => {
 
 router.post('/deleteProblem/',function(req,res,next){
     const problemnumber = req.body.problem_number;
-    model.problem.updateOne({problem_number : problemnumber},{deleted_yn : true},{updated :true})
+    model.problem.updateOne({problem_number : problemnumber},{delete_yn : true},{updated :true})
     .then(result => {
         if(result.nModified === 0) throw new Error('delete failure');
         if(result.n === 0) throw new Error('not found');
