@@ -287,6 +287,7 @@ router.get('/getAssignmentList',function(req,res,next){
     });
 
 });
+
 //28-2 과제 목록을 요청(GET)받으면 해당 학생의 반 id에 속하는 과제 목록을 반환한다.
 router.get('/getClassAssignment/:id',function(req,res,next){
     
@@ -295,6 +296,7 @@ router.get('/getClassAssignment/:id',function(req,res,next){
 
     model.classroom.find()
     .where('_id').equals(class_id)
+    .where('user_list').in(user_id)
     .then(result => {
         return model.assignment.find()
         .where('classroom_name').equals(result.name)
@@ -307,6 +309,57 @@ router.get('/getClassAssignment/:id',function(req,res,next){
     });
 
 });
+
+router.get('/getChattingList/:page/:id', (req, res, next) => {
+    
+    const class_id = mongoose.Types.ObjectId(req.params.id);
+    model.chatting.find().where('classroom_id').equals(class_id)
+        .sort({send_time: 'desc'}).skip(req.params.page * 15 - 15).limit(15)
+        .select({'_id': 0}).select('send_time').select('message').select('owner')
+        .then(result => {
+            const ChattingValue = [];
+            for(let i = 0; i < result.length; i++) {
+                ChattingValue.push({
+                    send_time : result[i].send_time,
+                    message : result[i].message,
+                    owner : result[i].owner
+                });
+            }
+            res.status(200).json({chatting_list: ChattingValue});
+        }).catch(err => {
+            console.log(err);
+            res.status(500).json({message: "server-error"});
+    })
+});
+
+router.post('/saveChatting',(req,res,next) => {
+
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
+    const class_id = mongoose.Types.ObjectId(req.body.id);
+    const now  = new Date();
+    let user_nickname = ''
+
+
+    model.user.findOne()
+    .where('_id').equals(user_id)
+    .then(result => {
+        user_nickname = result.nickname;
+        const save_chatting = new model.chatting({
+            send_time : now,
+            message : req.body.message,
+            owner : user_nickname,
+            classroom_id : class_id
+        });
+        return save_chatting.save();
+    }).then(result => {
+        res.status(200).json({message : "chatting is saved"});
+    }).catch(err => {
+        res.status(500).json({message : 'server-error'});
+    })
+})
+
+
+
 
 
 module.exports = router;
