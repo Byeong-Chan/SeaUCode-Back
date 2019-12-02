@@ -260,7 +260,7 @@ router.get('/getStuRequest/:id',function(req,res,next){
 
             respons.request_student_list = result.request_student_list;
             console.log(respons)
-            model.clasr
+            
 
         }).then(result =>{
         res.status(200).json(respons);
