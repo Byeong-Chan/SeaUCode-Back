@@ -310,6 +310,8 @@ router.get('/getClassAssignment/:id',function(req,res,next){
 
 });
 
+//getClassInfo하고 합칠 때 page값이 parameter로 넘어오는지 room의 넘버들은 어떻게 해쉬할 것인지
+
 router.get('/getChattingList/:page/:id', (req, res, next) => {
     
     const class_id = mongoose.Types.ObjectId(req.params.id);
@@ -329,7 +331,7 @@ router.get('/getChattingList/:page/:id', (req, res, next) => {
         }).catch(err => {
             console.log(err);
             res.status(500).json({message: "server-error"});
-    })
+    });
 });
 
 router.post('/saveChatting',(req,res,next) => {
@@ -355,11 +357,34 @@ router.post('/saveChatting',(req,res,next) => {
         res.status(200).json({message : "chatting is saved"});
     }).catch(err => {
         res.status(500).json({message : 'server-error'});
-    })
-})
+    });
+});
 
 
+router.get('/searchClass/Classname/:field/:page',(req,res,next) =>{
+    const re = new RegExp(req.params.field);
+    model.classroom.find().where('name').regex(re)
+        .skip(req.params.page*15-15).limit(15)
+        .select('_id').select('name').select('user_list')
+        .then(result => {
+            res.status(200).json({class_list : result});
+        }).catch(err =>{
+            res.status(500).json({message : 'server-error'});
+        });
+});
 
+router.get('/searchClass/TeacherNickname/:nickname/:page',function(req,res,next){
+        
+    model.classroom.find()
+        .where('classroom_master').equals(req.params.nickname)
+        .select('_id').select('name').select('user_list')
+        .skip(req.params.page*15-15).limit(15)
+        .then(result => {
+            res.status(200).json({class_list : result});
+        }).catch(err =>{
+            res.status(500).json({message : 'server-error'});
+        });
+});
 
 
 module.exports = router;
