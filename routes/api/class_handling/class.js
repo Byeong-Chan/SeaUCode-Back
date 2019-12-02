@@ -260,6 +260,7 @@ router.get('/getStuRequest/:id',function(req,res,next){
 
             respons.request_student_list = result.request_student_list;
             console.log(respons)
+            model.clasr
 
         }).then(result =>{
         res.status(200).json(respons);
@@ -386,5 +387,53 @@ router.get('/searchClass/TeacherNickname/:nickname/:page',function(req,res,next)
         });
 });
 
+// 38-4
+router.post('/joinClassRequest',function(req,res,next){
+
+    const user_id = mongoose.Types.ObjectId(req.decoded_token.id);
+    const class_id = req.body.id;
+
+    model.user.findOne().where().equals(user_id).then(result =>{
+        return model.classroom.updateOne({id : class_id},{$addToSet: {"request_student_list": result.nickname}}, {updated :true});
+    }).then(result => {
+        if(result.nModified === 0) throw new Error ('update failure :request_student_list');
+        if(result.n === 0) throw new Error ('not found');
+        res.status(200).json({message : ''});
+    }).catch(err =>{
+        if(err.message === 'update failure :request_student_list'){
+            res.status(400).json({message: 'update failure :request_student_list'});
+        }else if(err.message === 'not found'){
+            res.status(404).json({message : 'not found'});
+        }
+        else{
+            res.status(500).json({message : 'server-error'});
+        }
+    });
+});
+
+//18-2 학생의 nickName 과 반 id와 함께 거절 혹은 수락에 대한 정보를 갱신해줄것을 요청(POST)을 받으면 해당 수락시 반 학생 리스트에 추가한다. 이후 가입 요청 목록에서는 제거한다.
+
+router.post('/AllowStudent',function(req,res,next){
+    const class_id = req.body.id;
+    const nickname = req.body.nickName;
+
+    model.classroom.updateOne({_id:class_id,nickname,request_student_list :{$in :nickname }}
+            ,{user_list :{$addToSet : nickname},request_student_list :{$pop :nickname}}
+            ,{updated :true})
+    .then(result => {
+        if(result.nModified === 0) throw new Error ('update failure');
+        if(result.n === 0) throw new Error ('not found');
+        res.status(200).json({message : 'updated'});
+    }).catch(err => {
+        if(err.message === 'update failure'){
+            res.status(400).json({message: 'update failure'});
+        }else if(err.message === 'not found'){
+            res.status(404).json({message : 'not found'});
+        }
+        else{
+            res.status(500).json({message : 'server-error'});
+        }
+    })
+});
 
 module.exports = router;
