@@ -70,7 +70,7 @@ router.get('/getClassInfo/:id', function(req, res, next) {
             response.name = result.name;
             response.notice = response.notice.concat(result.notice_list.slice(-1));
             return model.chatting.find()
-                .where('classroom_id').equals(class_id).limit(15);
+                .where('classroom_id').equals(class_id).limit(15).select({_id: 0, __v: 0, classroom_id: 0});
         }).then(result => {
             response.chatting = response.chatting.concat(result);
             res.status(200).json(response);
