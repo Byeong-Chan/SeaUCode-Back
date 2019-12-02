@@ -335,12 +335,10 @@ router.get('/getChattingList/:page/:id', (req, res, next) => {
 });
 
 router.post('/saveChatting',(req,res,next) => {
-
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
-    const class_id = mongoose.Types.ObjectId(req.body.id);
+    const class_id = req.body.id;
     const now  = new Date();
-    let user_nickname = ''
-
+    let user_nickname = '';
 
     model.user.findOne()
     .where('_id').equals(user_id)
@@ -354,6 +352,11 @@ router.post('/saveChatting',(req,res,next) => {
         });
         return save_chatting.save();
     }).then(result => {
+        req.app.get('server-socket').emit(req.body.id, {
+            send_time : now,
+            message : req.body.message,
+            owner : user_nickname,
+            classroom_id : class_id});
         res.status(200).json({message : "chatting is saved"});
     }).catch(err => {
         res.status(500).json({message : 'server-error'});
