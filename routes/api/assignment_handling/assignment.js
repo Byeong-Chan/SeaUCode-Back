@@ -13,6 +13,43 @@ router.use(bodyParser.urlencoded({
 
 router.use(auth);
 
+router.get('/getAssignmentForModifying/:id', function(req, res, next) {
+    const assignment_id = mongoose.Types.ObjectId(req.params.id);
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
+
+    const response = {};
+
+    model.assignment.findOne().where('_id').equals(assignment_id).then(result => {
+        if(result === null) throw new Error('not-assignment');
+        for(const key of Object.keys(result._doc)) {
+            if(key === '__v') continue;
+            if(key === '_id') continue;
+            response[key] = result._doc[key];
+            if(key === 'start_date' || key === 'end_date') response[key] = result._doc[key].getTime();
+        }
+        return model.classroom.findOne().where('_id').equals(result.class_id).where('classroom_owner').equals(result.teacher_nickname);
+    }).then(result => {
+        if(result === null) throw new Error('class-auth-fail');
+        return model.user.findOne().where('_id').equals(user_id).where('nickname').in(result.classroom_owner);
+    }).then(result => {
+        if(result === null) throw new Error('teacher-auth-fail');
+        return model.problem.find().where('problem_number').in(response.problem_list)
+            .select({_id: 0}).select('Category').select('problem_number').select('name');
+    }).then(result => {
+        response.problem_list = result;
+        res.status(200).json(response);
+    }).catch(err => {
+        if(err.message === 'not-assignment')
+            res.status(404).json({message: 'not-assignment'});
+        else if(err.message === 'class-auth-fail')
+            res.status(403).json({message: 'class-auth-fail'});
+        else if(err.message === 'teacher-auth-fail')
+            res.status(403).json({message: 'teacher-auth-fail'});
+        else
+            res.status(500).json({message: 'server-error'});
+    });
+});
+
 //15-6
 router.get('/getAssignmentList/:class_id/:nickname', function(req, res, next) {
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
@@ -54,7 +91,7 @@ router.get('/getAssignmentProgress/:assignment_id', function(req, res, next) {
             state: {$eq: 2}
         });
     }).then(result => {
-        res.json({acc_list: result});
+        res.status(200).json({acc_list: result});
     }).catch(err => {
         if(err.message === 'not-exist-assignment') {
             res.status(404).json('not-exist-assignment');
