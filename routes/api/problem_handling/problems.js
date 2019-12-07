@@ -120,7 +120,6 @@ router.post('/setAssignment',(req,res,next) => {
         else res.status(500).json({message: 'server-error'});
     });
 });
-
 router.post('/updateAssignment',(req,res,next) => {
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
     const classroom_id = mongoose.Types.ObjectId(req.body.classroom_id);
@@ -213,5 +212,43 @@ router.get('/getDescription/:problem_number',function(req,res,next){
 
 });
 
+
+//기존의 문제를 반환하는 방식을 (난이도/카테고리/문제이름/문제번호)로 15개씩 반환해주는 방식으로 수정한다.
+
+router.get('/getProblemList/:page', (req, res, next) => {
+    const page = req.params.page;
+    const ProblemValue = [];
+    const OutProblemValue = [];
+    model.problem.find()
+        .where('delete_yn').equals(false)
+        .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty')
+        .then(result => {
+            
+            for(let i = 0; i < result.length; i++) {
+                ProblemValue.push({
+                    name : result[i].name,
+                    problem_number : result[i].problem_number,
+                    Category : result[i].Category,
+                    difficulty : result[i].difficulty
+                });
+            }
+            return model.outProblem.find()
+            .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty');
+        }).then(result=> {
+            for(let i = 0; i < result.length; i++) {
+                OutProblemValue.push({
+                    name : result[i].name,
+                    problem_number : result[i].problem_number,
+                    Category : result[i].Category,
+                    difficulty : result[i].difficulty
+                });
+            }
+            const problem_added = ProblemValue.concat(OutProblemValue);
+            const problem_list  = problem_added.slice(page*15-15,page*15-1);
+            res.status(200).json({problem_list: problem_list});
+        }).catch(err => {
+            res.status(500).json({message: "server-error"});
+    });
+});
 
 module.exports = router;
