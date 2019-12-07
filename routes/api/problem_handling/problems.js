@@ -233,14 +233,14 @@ router.get('/getProblemList/outProblem/:page', (req, res, next) => {
                 });
             }
             return model.outProblem.find()
-            .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty');
+            .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }).then(result=> {
             for(let i = 0; i < result.length; i++) {
                 OutProblemValue.push({
                     name : result[i].name,
                     problem_number : result[i].problem_number,
                     Category : result[i].Category,
-                    difficulty : result[i].difficulty
+                    difficulty : result[i].problem_rating
                 });
             }
             const problem_added = ProblemValue.concat(OutProblemValue);
@@ -270,14 +270,14 @@ router.get('/getProblemList/outProblem/name/:field/:page', (req, res, next) => {
                 });
             }
             return model.outProblem.find().where('name').regex(re)
-            .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty');
+            .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }).then(result=> {
             for(let i = 0; i < result.length; i++) {
                 OutProblemValue.push({
                     name : result[i].name,
                     problem_number : result[i].problem_number,
                     Category : result[i].Category,
-                    difficulty : result[i].difficulty
+                    difficulty : result[i].problem_rating
                 });
             }
             const problem_added = ProblemValue.concat(OutProblemValue);
@@ -307,14 +307,14 @@ router.get('/getProblemList/outProblem/Category/:field/:page', (req, res, next) 
                 });
             }
             return model.outProblem.find().where('Category').regex(re)
-            .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty');
+            .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }).then(result=> {
             for(let i = 0; i < result.length; i++) {
                 OutProblemValue.push({
                     name : result[i].name,
                     problem_number : result[i].problem_number,
                     Category : result[i].Category,
-                    difficulty : result[i].difficulty
+                    difficulty : result[i].problem_rating
                 });
             }
             const problem_added = ProblemValue.concat(OutProblemValue);
@@ -344,14 +344,14 @@ router.get('/getProblemList/outProblem/difficulty/:field/:page', (req, res, next
                 });
             }
             return model.outProblem.find().where('difficulty').regex(re)
-            .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty');
+            .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }).then(result=> {
             for(let i = 0; i < result.length; i++) {
                 OutProblemValue.push({
                     name : result[i].name,
                     problem_number : result[i].problem_number,
                     Category : result[i].Category,
-                    difficulty : result[i].difficulty
+                    difficulty : result[i].problem_rating
                 });
             }
             const problem_added = ProblemValue.concat(OutProblemValue);
@@ -381,14 +381,14 @@ router.get('/getProblemList/outProblem/problem_number/:field/:page', (req, res, 
                 });
             }
             return model.outProblem.find().where('problem_number').regex(re)
-            .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty');
+            .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }).then(result=> {
             for(let i = 0; i < result.length; i++) {
                 OutProblemValue.push({
                     name : result[i].name,
                     problem_number : result[i].problem_number,
                     Category : result[i].Category,
-                    difficulty : result[i].difficulty
+                    difficulty : result[i].problem_rating
                 });
             }
             const problem_added = ProblemValue.concat(OutProblemValue);
@@ -398,6 +398,8 @@ router.get('/getProblemList/outProblem/problem_number/:field/:page', (req, res, 
             res.status(500).json({message: "server-error"});
     });
 });
+
+
 
 
 module.exports = router;
