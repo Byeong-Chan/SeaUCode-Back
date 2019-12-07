@@ -73,9 +73,13 @@ router.get('/getClassInfo/:id', function(req, res, next) {
                 .where('classroom_id').equals(class_id).sort({send_time: -1}).limit(15).select({_id: 0, __v: 0, classroom_id: 0});
         }).then(result => {
             response.chatting = response.chatting.concat(result);
+            for(let i = 0; i < response.chatting.length; i++) {
+                response.chatting[i].send_time = response.chatting[i].send_time.getTime();
+            }
             response.chatting.reverse();
             res.status(200).json(response);
         }).catch(err => {
+            console.log(err);
             if(err.message === 'not-exist-class') {
                 res.status(404).json({message: 'not-exist-class'});
             }
@@ -324,7 +328,7 @@ router.get('/getChattingList/:page/:id', (req, res, next) => {
             const ChattingValue = [];
             for(let i = 0; i < result.length; i++) {
                 ChattingValue.push({
-                    send_time : result[i].send_time,
+                    send_time : result[i].send_time.getTime(),
                     message : result[i].message,
                     owner : result[i].owner
                 });
@@ -356,7 +360,7 @@ router.post('/saveChatting',(req,res,next) => {
         return save_chatting.save();
     }).then(result => {
         req.app.get('server-socket').emit(req.body.id, {
-            send_time : now,
+            send_time : now.getTime(),
             message : req.body.message,
             owner : user_nickname,
             classroom_id : class_id});
