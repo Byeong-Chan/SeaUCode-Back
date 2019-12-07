@@ -13,7 +13,10 @@ const userSchema = new mongoose.Schema({
     email_token : String,
     solved_problems : [Number],
     salt: String,
-    nickname : { type: String, unique: true }
+    nickname : { type: String, unique: true },
+    codeforces_id: String,
+    boj_id: String,
+    spoj_id: String
 });
 
 const classroomSchema = new mongoose.Schema({
@@ -133,6 +136,14 @@ const userFeedbackSchema = new mongoose.Schema({
     content : String
 });
 
+const outProblemSchema = new mongoose.Schema({
+    name: String,
+    Category: [],
+    problem_number: {type:String, unique: true},
+    problem_solver: Number,
+    problem_rating: Number
+});
+
 //참고로 몽구스는 model의 첫 번째 인자로 컬렉션 이름을 만듭니다. User이면 소문자화 후 복수형으로 바꿔서 users 컬렉션이 됩니다.
 module.exports = {
     user: mongoose.model('User', userSchema),
@@ -145,5 +156,6 @@ module.exports = {
     judgeServer: module.exports.judgeServer = mongoose.model('JudgeServer', judgeServerSchema),
     codeTime : module.exports.codeTime = mongoose.model('CodeTime',codetimeSchema),
     assignment : module.exports.assignment = mongoose.model('Assignment',assignmentSchema),
-    userFeedback : module.exports.userFeedback = mongoose.model('UserFeedback',userFeedbackSchema)
+    userFeedback : module.exports.userFeedback = mongoose.model('UserFeedback',userFeedbackSchema),
+    outProblem: module.exports.outProblem = mongoose.model('OutProblem', outProblemSchema)
 };
