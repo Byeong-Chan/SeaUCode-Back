@@ -48,7 +48,10 @@ router.post('/', function(req, res, next) {
             role: req.body.role,
             solved_problem: [],
             classroom: [],
-            salt: user_salt
+            salt: user_salt,
+            boj_id: req.body.boj_id,
+            codeforces_id: req.body.codeforces_id,
+            spoj_id: req.body.spoj_id
         });
 
         return save_user.save();
