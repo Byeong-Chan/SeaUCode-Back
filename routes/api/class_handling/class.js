@@ -95,19 +95,20 @@ router.get('/getClassInfo/:id', function(req, res, next) {
     });
 });
 
-//9-2 반 id와 함께 공지목록과 그 내용 요청(GET) 받으면 반환한다.  (여기서 반 id를 parameter로 받는게 맞는지 확인 아니면 user를 통해 반 id를 찾아서 접근해야하는지
 router.get('/getNoticeList/:id',function(req,res,next){
-
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
     const class_id = mongoose.Types.ObjectId(req.params.id);
-    
-    
-    model.classroom.findOne()
-    .where('_id').equals(class_id)
-    .select('notice_list')
-    .then(result => {
+    model.user.findOne().where("_id").equals(user_id).then(result => {
+        if(result === null) throw new Error('user-not-found');
+        return model.classroom.findOne()
+            .where('_id').equals(class_id)
+            .where('user_list').equals(result.nickname)
+            .select('notice_list').select({_id: 0});
+    }).then(result => {
         if(result === null) throw new Error('no notice list');
         res.status(200).json(result);
     }).catch(err =>{
+        console.log(err);
         if(err.message === 'no notice list'){
             res.status(400).json({message :'no notice list'});
         }
