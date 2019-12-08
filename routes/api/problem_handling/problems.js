@@ -55,7 +55,12 @@ router.get('/getProblemList/:page', (req, res, next) => {
 });
 
 router.get('/getProblemList/name/:field/:page', (req, res, next) => {
-    const re = new RegExp(req.params.field);
+    let tmp = "";
+    for(let i = 0; i < req.params.field.length; i++) {
+        if(req.params.field[i] === '\\') tmp += '[' + '\\' + '\\' + ']';
+        else tmp += '[' + req.params.field[i] + ']';
+    }
+    const re = new RegExp(tmp);
     model.problem.find().where('name').regex(re)
         .where('delete_yn').equals(false)
         .sort({"problem_number": 1}).skip(req.params.page * 15 - 15).limit(15)
@@ -68,7 +73,12 @@ router.get('/getProblemList/name/:field/:page', (req, res, next) => {
 });
 
 router.get('/getProblemList/category/:field/:page', (req, res, next) => {
-    const re = new RegExp(req.params.field);
+    let tmp = "";
+    for(let i = 0; i < req.params.field.length; i++) {
+        if(req.params.field[i] === '\\') tmp += '[' + '\\' + '\\' + ']';
+        else tmp += '[' + req.params.field[i] + ']';
+    }
+    const re = new RegExp(tmp);
     model.problem.find().where('Category').regex(re)
         .where('delete_yn').equals(false)
         .sort({"problem_number": 1}).skip(req.params.page * 15 - 15).limit(15)
@@ -80,10 +90,233 @@ router.get('/getProblemList/category/:field/:page', (req, res, next) => {
     });
 });
 
+router.get('/getOutProblemList/:oj/:page', (req, res, next) => {
+    const page = req.params.page;
+    const oj_re = new RegExp(req.params.oj);
+    model.outProblem.find().where('problem_number').regex(oj_re).sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
+        .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating')
+        .then(result => {
+            res.status(200).json({problem_list: result});
+        }).catch(err => {
+            res.status(500).json({message: "server-error"});
+    });
+});
 
+
+router.get('/getOutProblemList/name/:oj/:field/:page', (req, res, next) => {
+    const page = req.params.page;
+    const oj_re = new RegExp(req.params.oj);
+
+    let tmp = "";
+    for(let i = 0; i < req.params.field.length; i++) {
+        if(req.params.field[i] === '\\') tmp += '[' + '\\' + '\\' + ']';
+        else tmp += '[' + req.params.field[i] + ']';
+    }
+
+    const field_re = new RegExp(tmp);
+
+    model.outProblem.find().where('problem_number').regex(oj_re)
+        .where('name').regex(field_re)
+        .sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
+        .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating')
+        .then(result => {
+            res.status(200).json({problem_list: result});
+        }).catch(err => {
+        res.status(500).json({message: "server-error"});
+    });
+});
+
+router.get('/getOutProblemList/category/:oj/:field/:page', (req, res, next) => {
+    const page = req.params.page;
+    const oj_re = new RegExp(req.params.oj);
+
+    let tmp = "";
+    for(let i = 0; i < req.params.field.length; i++) {
+        if(req.params.field[i] === '\\') tmp += '[' + '\\' + '\\' + ']';
+        else tmp += '[' + req.params.field[i] + ']';
+    }
+
+    const field_re = new RegExp(tmp);
+
+    model.outProblem.find().where('problem_number').regex(oj_re)
+        .where('Category').regex(field_re)
+        .sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
+        .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating')
+        .then(result => {
+            res.status(200).json({problem_list: result});
+        }).catch(err => {
+        res.status(500).json({message: "server-error"});
+    });
+});
 
 router.use(auth);
 
+// 추천 문제 필터링
+router.get('/getOutProblemList/recommend/:oj/:page/:nickname/:difficulty', (req, res, next) => {
+    const page = req.params.page;
+    const oj_re = new RegExp(req.params.oj);
+
+    model.user.findOne().where("nickname").equals(req.params.nickname).then(result => {
+        if(result === null) throw new Error('not-user');
+        let oj_id = result.boj_id;
+        if(req.params.oj === 'spoj') oj_id = result.spoj_id;
+        if(req.params.oj === 'codeforces') oj_id = result.codeforces_id;
+        return model.outJudgeResult.find().where('oj').equals(req.params.oj)
+            .where('oj_id').equals(oj_id);
+    }).then(result => {
+        const arr = [];
+        for(let i = 0; i < result.length; i++) {
+            arr.push(result[i].problem_number);
+        }
+        if(req.params.oj === 'codeforces') {
+            return model.outProblem.find().where("problem_number").nin(arr)
+                .where("problem_number").regex(oj_re)
+                .where('problem_rating').gte(parseInt(req.params.difficulty))
+                .lte(parseInt(req.params.difficulty) + 100)
+                .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
+                .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
+        }
+        else if(req.params.oj === 'boj') {
+            return model.outProblem.find().where("problem_number").nin(arr)
+                .where("problem_number").regex(oj_re)
+                .where('problem_rating').gte(parseInt(req.params.difficulty))
+                .lte(parseInt(req.params.difficulty) + 1)
+                .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
+                .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
+        }
+        else {
+            return model.outProblem.find().where("problem_number").nin(arr)
+                .where("problem_number").regex(oj_re)
+                .where('problem_rating').gte(parseInt(req.params.difficulty))
+                .lte(parseInt(req.params.difficulty) + 2)
+                .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
+                .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
+        }
+    }).then(result => {
+        res.status(200).json({problem_list: result});
+    }).catch(err => {
+        res.status(500).json({message: "server-error"});
+    });
+});
+
+// 추천 문제 카테고리 필터링
+router.get('/getOutProblemList/category/recommend/:oj/:field/:page/:nickname/:difficulty', (req, res, next) => {
+    const page = req.params.page;
+    const oj_re = new RegExp(req.params.oj);
+
+    let tmp = "";
+    for(let i = 0; i < req.params.field.length; i++) {
+        if(req.params.field[i] === '\\') tmp += '[' + '\\' + '\\' + ']';
+        else tmp += '[' + req.params.field[i] + ']';
+    }
+
+    const field_re = new RegExp(tmp);
+
+    model.user.findOne().where("nickname").equals(req.params.nickname).then(result => {
+        if(result === null) throw new Error('not-user');
+        let oj_id = result.boj_id;
+        if(req.params.oj === 'spoj') oj_id = result.spoj_id;
+        if(req.params.oj === 'codeforces') oj_id = result.codeforces_id;
+        return model.outJudgeResult.find().where('oj').equals(req.params.oj)
+            .where('oj_id').equals(oj_id);
+    }).then(result => {
+            const arr = [];
+            for(let i = 0; i < result.length; i++) {
+                arr.push(result[i].problem_number);
+            }
+            if(req.params.oj === 'codeforces') {
+                return model.outProblem.find().where("problem_number").nin(arr)
+                    .where("problem_number").regex(oj_re)
+                    .where('problem_rating').gte(parseInt(req.params.difficulty))
+                    .lte(parseInt(req.params.difficulty) + 100)
+                    .where('Category').regex(field_re)
+                    .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
+                    .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
+            }
+            else if(req.params.oj === 'boj') {
+                return model.outProblem.find().where("problem_number").nin(arr)
+                    .where("problem_number").regex(oj_re)
+                    .where('problem_rating').gte(parseInt(req.params.difficulty))
+                    .lte(parseInt(req.params.difficulty) + 1)
+                    .where('Category').regex(field_re)
+                    .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
+                    .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
+            }
+            else {
+                return model.outProblem.find().where("problem_number").nin(arr)
+                    .where("problem_number").regex(oj_re)
+                    .where('problem_rating').gte(parseInt(req.params.difficulty))
+                    .lte(parseInt(req.params.difficulty) + 2)
+                    .where('Category').regex(field_re)
+                    .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
+                    .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
+            }
+        }).then(result => {
+            res.status(200).json({problem_list: result});
+    }).catch(err => {
+        res.status(500).json({message: "server-error"});
+    });
+});
+
+
+// 추천 문제 이름 필터링
+router.get('/getOutProblemList/name/recommend/:oj/:field/:page/:nickname/:difficulty', (req, res, next) => {
+    const page = req.params.page;
+    const oj_re = new RegExp(req.params.oj);
+
+    let tmp = "";
+    for(let i = 0; i < req.params.field.length; i++) {
+        if(req.params.field[i] === '\\') tmp += '[' + '\\' + '\\' + ']';
+        else tmp += '[' + req.params.field[i] + ']';
+    }
+
+    const field_re = new RegExp(tmp);
+
+    model.user.findOne().where("nickname").equals(req.params.nickname).then(result => {
+        if(result === null) throw new Error('not-user');
+        let oj_id = result.boj_id;
+        if(req.params.oj === 'spoj') oj_id = result.spoj_id;
+        if(req.params.oj === 'codeforces') oj_id = result.codeforces_id;
+        return model.outJudgeResult.find().where('oj').equals(req.params.oj)
+            .where('oj_id').equals(oj_id);
+    }).then(result => {
+        const arr = [];
+        for(let i = 0; i < result.length; i++) {
+            arr.push(result[i].problem_number);
+        }
+        if(req.params.oj === 'codeforces') {
+            return model.outProblem.find().where("problem_number").nin(arr)
+                .where("problem_number").regex(oj_re)
+                .where('problem_rating').gte(parseInt(req.params.difficulty))
+                .lte(parseInt(req.params.difficulty) + 100)
+                .where('name').regex(field_re)
+                .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
+                .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
+        }
+        else if(req.params.oj === 'boj') {
+            return model.outProblem.find().where("problem_number").nin(arr)
+                .where("problem_number").regex(oj_re)
+                .where('problem_rating').gte(parseInt(req.params.difficulty))
+                .lte(parseInt(req.params.difficulty) + 1)
+                .where('name').regex(field_re)
+                .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
+                .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
+        }
+        else {
+            return model.outProblem.find().where("problem_number").nin(arr)
+                .where("problem_number").regex(oj_re)
+                .where('problem_rating').gte(parseInt(req.params.difficulty))
+                .lte(parseInt(req.params.difficulty) + 2)
+                .where('name').regex(field_re)
+                .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
+                .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
+        }
+    }).then(result => {
+        res.status(200).json({problem_list: result});
+    }).catch(err => {
+        res.status(500).json({message: "server-error"});
+    });
+});
  
 //20-2
 //넘어오는 body 값들 problem_number,assignment의 네임, 시작 끝 기간, classroom_id
@@ -120,6 +353,7 @@ router.post('/setAssignment',(req,res,next) => {
         else res.status(500).json({message: 'server-error'});
     });
 });
+
 router.post('/updateAssignment',(req,res,next) => {
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
     const classroom_id = mongoose.Types.ObjectId(req.body.classroom_id);
@@ -179,248 +413,6 @@ router.delete('/deleteAssignment/:id', (req, res, next) => {
             res.status(403).json({message: 'teacher-auth-fail'});
         else
             res.status(500).json({message: 'server-error'});
-    });
-});
-
-//22-2 특정 문제 번호를 파라미터로 하여 요청(GET) 받으면 그 문제의 디스크립션과 입출력 예제를 반환한다.
-router.get('/getDescription/:problem_number',function(req,res,next){
-
-    const pro_number = req.params.problem_number;
-    const respons = {problem_description : [] , sample_input : [], sample_output : []};
-
-
-    model.problem.findOne()
-        .where('problem_number').equals(pro_number)
-        .where('delete_yn').equals(false)
-        .then(result => {
-            if(result === null) throw new Error('no problem has been exist');
-
-            respons.problem_description = result.problem_description;
-            respons.sample_input = result.sample_input;
-            respons.sample_output = result.sample_output;
-
-        }).then(result =>{
-        res.status(200).json(respons);
-    }).catch(err => {
-        if(err.message === 'no problem has been exist'){
-            res.status(400).json({message : 'problem do not exist'});
-        }
-        else{
-        res.status(500).json({message : 'server-error'});
-        }
-    });
-
-});
-
-
-//기존의 문제를 반환하는 방식을 (난이도/카테고리/문제이름/문제번호)로 15개씩 반환해주는 방식으로 수정한다.
-
-router.get('/getProblemList/outProblem/:page', (req, res, next) => {
-    const page = req.params.page;
-    const ProblemValue = [];
-    const OutProblemValue = [];
-    model.problem.find()
-        .where('delete_yn').equals(false)
-        .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty')
-        .then(result => {
-            
-            for(let i = 0; i < result.length; i++) {
-                ProblemValue.push({
-                    name : result[i].name,
-                    problem_number : result[i].problem_number,
-                    Category : result[i].Category,
-                    difficulty : result[i].difficulty
-                });
-            }
-            return model.outProblem.find()
-            .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating');
-        }).then(result=> {
-            for(let i = 0; i < result.length; i++) {
-                OutProblemValue.push({
-                    name : result[i].name,
-                    problem_number : result[i].problem_number,
-                    Category : result[i].Category,
-                    difficulty : result[i].problem_rating
-                });
-            }
-            const problem_added = ProblemValue.concat(OutProblemValue);
-            const problem_list  = problem_added.slice(page*15-15,page*15-1);
-            res.status(200).json({problem_list: problem_list});
-        }).catch(err => {
-            res.status(500).json({message: "server-error"});
-    });
-});
-
-router.get('/getProblemList/outProblem/name/:field/:page', (req, res, next) => {
-    const re = new RegExp(req.params.field);
-    const page = req.params.page;
-    const ProblemValue = [];
-    const OutProblemValue = [];
-    model.problem.find()
-        .where('delete_yn').equals(false).where('name').regex(re)
-        .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty')
-        .then(result => {
-            
-            for(let i = 0; i < result.length; i++) {
-                ProblemValue.push({
-                    name : result[i].name,
-                    problem_number : result[i].problem_number,
-                    Category : result[i].Category,
-                    difficulty : result[i].difficulty
-                });
-            }
-            return model.outProblem.find().where('name').regex(re)
-            .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating');
-        }).then(result=> {
-            for(let i = 0; i < result.length; i++) {
-                OutProblemValue.push({
-                    name : result[i].name,
-                    problem_number : result[i].problem_number,
-                    Category : result[i].Category,
-                    difficulty : result[i].problem_rating
-                });
-            }
-            const problem_added = ProblemValue.concat(OutProblemValue);
-            const problem_list  = problem_added.slice(page*15-15,page*15-1);
-            res.status(200).json({problem_list: problem_list});
-        }).catch(err => {
-            res.status(500).json({message: "server-error"});
-    });
-});
-
-router.get('/getProblemList/outProblem/Category/:field/:page', (req, res, next) => {
-    const re = new RegExp(req.params.field);
-    const page = req.params.page;
-    const ProblemValue = [];
-    const OutProblemValue = [];
-    model.problem.find()
-        .where('delete_yn').equals(false).where('Category').regex(re)
-        .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty')
-        .then(result => {
-            
-            for(let i = 0; i < result.length; i++) {
-                ProblemValue.push({
-                    name : result[i].name,
-                    problem_number : result[i].problem_number,
-                    Category : result[i].Category,
-                    difficulty : result[i].difficulty
-                });
-            }
-            return model.outProblem.find().where('Category').regex(re)
-            .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating');
-        }).then(result=> {
-            for(let i = 0; i < result.length; i++) {
-                OutProblemValue.push({
-                    name : result[i].name,
-                    problem_number : result[i].problem_number,
-                    Category : result[i].Category,
-                    difficulty : result[i].problem_rating
-                });
-            }
-            const problem_added = ProblemValue.concat(OutProblemValue);
-            const problem_list  = problem_added.slice(page*15-15,page*15-1);
-            res.status(200).json({problem_list: problem_list});
-        }).catch(err => {
-            res.status(500).json({message: "server-error"});
-    });
-});
-
-router.get('/getProblemList/outProblem/difficulty/:field/:page', (req, res, next) => {
-    const re = new RegExp(req.params.field);
-    const page = req.params.page;
-    const ProblemValue = [];
-    const OutProblemValue = [];
-    model.problem.find()
-        .where('delete_yn').equals(false).where('difficulty').regex(re)
-        .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty')
-        .then(result => {
-            
-            for(let i = 0; i < result.length; i++) {
-                ProblemValue.push({
-                    name : result[i].name,
-                    problem_number : result[i].problem_number,
-                    Category : result[i].Category,
-                    difficulty : result[i].difficulty
-                });
-            }
-            return model.outProblem.find().where('difficulty').regex(re)
-            .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating');
-        }).then(result=> {
-            for(let i = 0; i < result.length; i++) {
-                OutProblemValue.push({
-                    name : result[i].name,
-                    problem_number : result[i].problem_number,
-                    Category : result[i].Category,
-                    difficulty : result[i].problem_rating
-                });
-            }
-            const problem_added = ProblemValue.concat(OutProblemValue);
-            const problem_list  = problem_added.slice(page*15-15,page*15-1);
-            res.status(200).json({problem_list: problem_list});
-        }).catch(err => {
-            res.status(500).json({message: "server-error"});
-    });
-});
-
-router.get('/getProblemList/outProblem/problem_number/:field/:page', (req, res, next) => {
-    const re = new RegExp(req.params.field);
-    const page = req.params.page;
-    const ProblemValue = [];
-    const OutProblemValue = [];
-    model.problem.find()
-        .where('delete_yn').equals(false).where('problem_number').regex(re)
-        .select({"_id":0}).select('name').select('problem_number').select('Category').select('difficulty')
-        .then(result => {
-            
-            for(let i = 0; i < result.length; i++) {
-                ProblemValue.push({
-                    name : result[i].name,
-                    problem_number : result[i].problem_number,
-                    Category : result[i].Category,
-                    difficulty : result[i].difficulty
-                });
-            }
-            return model.outProblem.find().where('problem_number').regex(re)
-            .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating');
-        }).then(result=> {
-            for(let i = 0; i < result.length; i++) {
-                OutProblemValue.push({
-                    name : result[i].name,
-                    problem_number : result[i].problem_number,
-                    Category : result[i].Category,
-                    difficulty : result[i].problem_rating
-                });
-            }
-            const problem_added = ProblemValue.concat(OutProblemValue);
-            const problem_list  = problem_added.slice(page*15-15,page*15-1);
-            res.status(200).json({problem_list: problem_list});
-        }).catch(err => {
-            res.status(500).json({message: "server-error"});
-    });
-});
-
-router.get('/recommendationProblem/BOJ/:problem_rating1/:problem_rating2/:oj/:ID',(req,res,next) =>{
-    const boj_id = req.params.ID;
-    
-    model.outJudgeResult.find().where('oj_id').equals(boj_id)
-    .where('oj').equals(req.params.oj)
-    .then(result =>{
-        return model.outProblem.find().where('problem_rating').gte(req.params.problem_rating1).lte(req.params.problem_rating2)
-        .where('problem_number').not(result.problem_number)
-        .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating')
-        .sort({'problem_sovler':-1}).limit(15);
-    }).then(result => {
-        for(let i = 0; i < result.length; i++) {
-            OutProblemValue.push({
-                name : result[i].name,
-                problem_number : result[i].problem_number,
-                Category : result[i].Category,
-                difficulty : result[i].problem_rating
-            });
-        }
-        res.status(200).json({recommend_list :OutProblemValue});
-    }).catch(err =>{
-        res.status(500).json({message : server-error});
     });
 });
 
