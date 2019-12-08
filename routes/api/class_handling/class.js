@@ -202,13 +202,13 @@ router.post('/addStudentToClass',function(req, res, next) {
         if(err.message === 'add-student-not-found') {
             res.status(404).json({message: 'add-student-not-found'});
         }
-        if(err.message === 'user-not-found') {
+        else if(err.message === 'user-not-found') {
             res.status(403).json({message: 'user-not-found'});
         }
-        if(err.message === 'class-auth-fail') {
+        else if(err.message === 'class-auth-fail') {
             res.status(403).json({message: 'class-auth-fail'});
         }
-        if(err.message === 'update failure :classroom does not match'){
+        else if(err.message === 'update failure :classroom does not match'){
             res.status(400).json({message :'update failure :classroom does not match'});
         }else if(err.message === 'not found'){
             res.status(404).json({message : 'not found'});
@@ -286,8 +286,6 @@ router.get('/getClassAssignment/:id',function(req,res,next){
 
 });
 
-//getClassInfo하고 합칠 때 page값이 parameter로 넘어오는지 room의 넘버들은 어떻게 해쉬할 것인지
-
 router.get('/getChattingList/:page/:id', (req, res, next) => {
     
     const class_id = mongoose.Types.ObjectId(req.params.id);
@@ -339,5 +337,6 @@ router.post('/saveChatting',(req,res,next) => {
         res.status(500).json({message : 'server-error'});
     });
 });
+
 
 module.exports = router;
