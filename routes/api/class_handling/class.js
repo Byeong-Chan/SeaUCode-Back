@@ -108,9 +108,32 @@ router.get('/getNoticeList/:id',function(req,res,next){
         if(result === null) throw new Error('no notice list');
         res.status(200).json(result);
     }).catch(err =>{
-        console.log(err);
-        if(err.message === 'no notice list'){
+        if(err.message === 'user-not-found') {
+            res.status(403).json({message : 'user-not-found'});
+        }
+        else if(err.message === 'no notice list'){
             res.status(400).json({message :'no notice list'});
+        }
+        else{
+            res.status(500).json({message : 'server-error'});
+        }
+    });
+});
+
+router.post('/postNotice', function(req, res, next) {
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
+    const class_id = mongoose.Types.ObjectId(req.body.id);
+    model.user.findOne().where("_id").equals(user_id).then(result => {
+        if(result === null) throw new Error('user-not-found');
+        return model.classroom.findOne().where('_id').equals(class_id).where('classroom_owner').equals(result.nickname);
+    }).then(result=>{
+        if(result === null) throw new Error('teacher-auth-fail');
+        return model.classroom.updateOne({"_id": class_id}, {$push: {notice_list: {content: req.body.content, send_date: req.body.send_date}}});
+    }).then(result=>{
+        res.status(200).json({message: 'success'});
+    }).catch(err => {
+        if(err.message === 'user-not-found') {
+            res.status(403).json({message : 'user-not-found'});
         }
         else{
             res.status(500).json({message : 'server-error'});
