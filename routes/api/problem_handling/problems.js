@@ -248,6 +248,7 @@ router.get('/getOutProblemList/:oj/recommend/:nickname/:difficulty/:page', (req,
                 .where("problem_number").regex(oj_re)
                 .where('problem_rating').gte(parseInt(req.params.difficulty))
                 .lte(parseInt(req.params.difficulty) + 100)
+                .sort({"problem_solver": -1})
                 .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
                 .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }
@@ -256,6 +257,7 @@ router.get('/getOutProblemList/:oj/recommend/:nickname/:difficulty/:page', (req,
                 .where("problem_number").regex(oj_re)
                 .where('problem_rating').gte(parseInt(req.params.difficulty))
                 .lte(parseInt(req.params.difficulty) + 1)
+                .sort({"problem_solver": -1})
                 .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
                 .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }
@@ -264,6 +266,7 @@ router.get('/getOutProblemList/:oj/recommend/:nickname/:difficulty/:page', (req,
                 .where("problem_number").regex(oj_re)
                 .where('problem_rating').gte(parseInt(req.params.difficulty))
                 .lte(parseInt(req.params.difficulty) + 2)
+                .sort({"problem_solver": -1})
                 .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
                 .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }
@@ -305,6 +308,7 @@ router.get('/getOutProblemList/:oj/recommend/:nickname/:difficulty/category/:fie
                     .where('problem_rating').gte(parseInt(req.params.difficulty))
                     .lte(parseInt(req.params.difficulty) + 100)
                     .where('Category').regex(field_re)
+                    .sort({"problem_solver": -1})
                     .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
                     .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
             }
@@ -314,6 +318,7 @@ router.get('/getOutProblemList/:oj/recommend/:nickname/:difficulty/category/:fie
                     .where('problem_rating').gte(parseInt(req.params.difficulty))
                     .lte(parseInt(req.params.difficulty) + 1)
                     .where('Category').regex(field_re)
+                    .sort({"problem_solver": -1})
                     .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
                     .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
             }
@@ -323,6 +328,7 @@ router.get('/getOutProblemList/:oj/recommend/:nickname/:difficulty/category/:fie
                     .where('problem_rating').gte(parseInt(req.params.difficulty))
                     .lte(parseInt(req.params.difficulty) + 2)
                     .where('Category').regex(field_re)
+                    .sort({"problem_solver": -1})
                     .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
                     .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
             }
@@ -365,6 +371,7 @@ router.get('/getOutProblemList/:oj/recommend/:nickname/:difficulty/name/:field/:
                 .where('problem_rating').gte(parseInt(req.params.difficulty))
                 .lte(parseInt(req.params.difficulty) + 100)
                 .where('name').regex(field_re)
+                .sort({"problem_solver": -1})
                 .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
                 .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }
@@ -374,6 +381,7 @@ router.get('/getOutProblemList/:oj/recommend/:nickname/:difficulty/name/:field/:
                 .where('problem_rating').gte(parseInt(req.params.difficulty))
                 .lte(parseInt(req.params.difficulty) + 1)
                 .where('name').regex(field_re)
+                .sort({"problem_solver": -1})
                 .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
                 .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }
@@ -383,6 +391,7 @@ router.get('/getOutProblemList/:oj/recommend/:nickname/:difficulty/name/:field/:
                 .where('problem_rating').gte(parseInt(req.params.difficulty))
                 .lte(parseInt(req.params.difficulty) + 2)
                 .where('name').regex(field_re)
+                .sort({"problem_solver": -1})
                 .sort({"problem_number": 1}).skip(page * 15 - 15).limit(15)
                 .select({"_id": 0}).select('name').select('problem_number').select('Category').select('problem_rating');
         }
