@@ -249,36 +249,6 @@ router.post('/deleteStudentInClass/',function(req,res,next){
     });
 });
 
-//17-2 가입 요청 목록에 대해 반 id와 함께 요청 받으면 가입 요청 목록(request_student_list)을 반환한다.
-router.get('/getStuRequest/:id',function(req,res,next){
-    //const user_id = mongoose.Types.ObjectId(req.decode_token._id); //받는값이 이게 맞는지 의문 =>아니면 넘어온 값을 통해 user를 통해 검색해서 작성해야하는지
-
-    //const user_id = mongoose.Types.ObjectId(req.decode_token._id);
-    const class_id = mongoose.Types.ObjectId(req.params.id);
-    const respons = {request_student_list : [] };
-
-
-    model.classroom.find()
-        .where('_id').equals(class_id)
-        .then(result => {
-            if(result === null) throw new error('no request_student do not have list');
-
-            respons.request_student_list = result.request_student_list;
-            console.log(respons)
-            
-
-        }).then(result =>{
-        res.status(200).json(respons);
-    }).catch(err => {
-        if(err.message === 'no request_student do not have list'){
-            res.status(400).json({message : "class do not exist"});
-        }
-        else{
-        res.status(500).json({message : 'server-error'});
-        }
-    });
-});
-
 //27-2 과제 목록을 요청(GET)받으면 해당 학생의 모든 과제목록을 반환한다.
 router.get('/getAssignmentList',function(req,res,next){
     const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
@@ -368,81 +338,6 @@ router.post('/saveChatting',(req,res,next) => {
     }).catch(err => {
         res.status(500).json({message : 'server-error'});
     });
-});
-
-
-router.get('/searchClass/Classname/:field/:page',(req,res,next) =>{
-    const re = new RegExp(req.params.field);
-    model.classroom.find().where('name').regex(re)
-        .skip(req.params.page*15-15).limit(15)
-        .select('_id').select('name').select('user_list')
-        .then(result => {
-            res.status(200).json({class_list : result});
-        }).catch(err =>{
-            res.status(500).json({message : 'server-error'});
-        });
-});
-
-router.get('/searchClass/TeacherNickname/:nickname/:page',function(req,res,next){
-        
-    model.classroom.find()
-        .where('classroom_master').equals(req.params.nickname)
-        .select('_id').select('name').select('user_list')
-        .skip(req.params.page*15-15).limit(15)
-        .then(result => {
-            res.status(200).json({class_list : result});
-        }).catch(err =>{
-            res.status(500).json({message : 'server-error'});
-        });
-});
-
-// 38-4
-router.post('/joinClassRequest',function(req,res,next){
-
-    const user_id = mongoose.Types.ObjectId(req.decoded_token.id);
-    const class_id = req.body.id;
-
-    model.user.findOne().where().equals(user_id).then(result =>{
-        return model.classroom.updateOne({id : class_id},{$addToSet: {"request_student_list": result.nickname}}, {updated :true});
-    }).then(result => {
-        if(result.nModified === 0) throw new Error ('update failure :request_student_list');
-        if(result.n === 0) throw new Error ('not found');
-        res.status(200).json({message : ''});
-    }).catch(err =>{
-        if(err.message === 'update failure :request_student_list'){
-            res.status(400).json({message: 'update failure :request_student_list'});
-        }else if(err.message === 'not found'){
-            res.status(404).json({message : 'not found'});
-        }
-        else{
-            res.status(500).json({message : 'server-error'});
-        }
-    });
-});
-
-//18-2 학생의 nickName 과 반 id와 함께 거절 혹은 수락에 대한 정보를 갱신해줄것을 요청(POST)을 받으면 해당 수락시 반 학생 리스트에 추가한다. 이후 가입 요청 목록에서는 제거한다.
-
-router.post('/AllowStudent',function(req,res,next){
-    const class_id = req.body.id;
-    const nickname = req.body.nickName;
-
-    model.classroom.updateOne({_id:class_id,nickname,request_student_list :{$in :nickname }}
-            ,{user_list :{$addToSet : nickname},request_student_list :{$pop :nickname}}
-            ,{updated :true})
-    .then(result => {
-        if(result.nModified === 0) throw new Error ('update failure');
-        if(result.n === 0) throw new Error ('not found');
-        res.status(200).json({message : 'updated'});
-    }).catch(err => {
-        if(err.message === 'update failure'){
-            res.status(400).json({message: 'update failure'});
-        }else if(err.message === 'not found'){
-            res.status(404).json({message : 'not found'});
-        }
-        else{
-            res.status(500).json({message : 'server-error'});
-        }
-    })
 });
 
 module.exports = router;
