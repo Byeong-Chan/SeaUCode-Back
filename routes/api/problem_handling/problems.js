@@ -399,7 +399,30 @@ router.get('/getProblemList/outProblem/problem_number/:field/:page', (req, res, 
     });
 });
 
-
+router.get('/recommendationProblem/BOJ/:problem_rating1/:problem_rating2/:oj/:ID',(req,res,next) =>{
+    const boj_id = req.params.ID;
+    
+    model.outJudgeResult.find().where('oj_id').equals(boj_id)
+    .where('oj').equals(req.params.oj)
+    .then(result =>{
+        return model.outProblem.find().where('problem_rating').gte(req.params.problem_rating1).lte(req.params.problem_rating2)
+        .where('problem_number').not(result.problem_number)
+        .select({"_id":0}).select('name').select('problem_number').select('Category').select('problem_rating')
+        .sort({'problem_sovler':-1}).limit(15);
+    }).then(result => {
+        for(let i = 0; i < result.length; i++) {
+            OutProblemValue.push({
+                name : result[i].name,
+                problem_number : result[i].problem_number,
+                Category : result[i].Category,
+                difficulty : result[i].problem_rating
+            });
+        }
+        res.status(200).json({recommend_list :OutProblemValue});
+    }).catch(err =>{
+        res.status(500).json({message : server-error});
+    });
+});
 
 
 module.exports = router;
