@@ -109,7 +109,7 @@ router.get('/getAssignmentProgress/:assignment_id', function(req, res, next) {
 
     const response = {};
 
-    const asg_info = {}
+    const asg_info = {};
 
     model.assignment.findOne().where("_id").equals(assignment_id).then(result => {
         if (result === null) throw new Error('not-exist-assignment');
@@ -241,6 +241,81 @@ router.get('/getAssignmentProblemList/:id',function(req,res,next) {
             res.status(400).json({message : "no assigment exist" });
         }else{
             res.status(500).json({message : "server-error"});
+        }
+    });
+});
+
+router.get('/getOutJudgeResultLink/:assignment_id', function(req, res, next) {
+    const assignment_id = mongoose.Types.ObjectId(req.params.assignment_id);
+
+
+    const SeaUCodeList = [];
+    const outProblemList = [];
+
+    const user_oj_id = {};
+
+    const response = {};
+
+    const asg_info = {};
+
+    model.assignment.findOne().where("_id").equals(assignment_id).then(result => {
+        if (result === null) throw new Error('not-exist-assignment');
+
+        for (let i = 0; i < result.problem_list.length; i++) {
+            const item = result.problem_list[i];
+            if (item.split('/')[0] === 'SeaUCode') {
+                SeaUCodeList.push(parseInt(item.split('/')[1]));
+            }
+            else {
+                outProblemList.push(item);
+            }
+        }
+
+        asg_info.start_date = result.start_date;
+        asg_info.end_date = result.end_date;
+        asg_info.user_nickname = result.user_nickname;
+
+        return model.user.findOne().where("nickname").equals(asg_info.user_nickname);
+    }).then(result=> {
+        if (result !== null) {
+            user_oj_id.boj_id = result.boj_id;
+            user_oj_id.codeforces_id = result.codeforces_id;
+            user_oj_id.spoj_id = result.spoj_id;
+        }
+        else {
+            user_oj_id.boj_id = '';
+            user_oj_id.codeforces_id = '';
+            user_oj_id.spoj_id = '';
+        }
+
+        return model.outJudgeResult.find({
+            problem_number: { $in : outProblemList },
+            oj: "codeforces",
+            oj_id: user_oj_id.codeforces_id
+        }).select("problem_number").select("pending_link").select({_id: 0});
+    }).then(result => {
+        response.link_list = result;
+        return model.outJudgeResult.find({
+            problem_number: { $in : outProblemList },
+            oj: "boj",
+            oj_id: user_oj_id.boj_id
+        }).select("problem_number").select("pending_link").select({_id: 0});
+    }).then(result => {
+        response.link_list = response.link_list.concat(result);
+        return model.outJudgeResult.find({
+            problem_number: { $in : outProblemList },
+            oj: "spoj",
+            oj_id: user_oj_id.spoj_id
+        }).select("problem_number").select("pending_link").select({_id: 0});
+    }).then(result => {
+        response.link_list = response.link_list.concat(result);
+        res.status(200).json(response);
+    }).catch(err => {
+        if(err.message === 'not-exist-assignment') {
+            res.status(404).json('not-exist-assignment');
+        }
+        else {
+            res.status(500).json('server-error');
         }
     });
 });
