@@ -122,7 +122,7 @@ const codetimeSchema = new mongoose.Schema({
 const assignmentSchema = new mongoose.Schema({
     user_nickname : String,
     name : String,
-    problem_list : [Number],
+    problem_list : [String],
     start_date : Date,
     end_date : Date,
     classroom_name : String,
