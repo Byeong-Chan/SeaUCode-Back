@@ -95,21 +95,45 @@ router.get('/getClassInfo/:id', function(req, res, next) {
     });
 });
 
-//9-2 반 id와 함께 공지목록과 그 내용 요청(GET) 받으면 반환한다.  (여기서 반 id를 parameter로 받는게 맞는지 확인 아니면 user를 통해 반 id를 찾아서 접근해야하는지
 router.get('/getNoticeList/:id',function(req,res,next){
-
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
     const class_id = mongoose.Types.ObjectId(req.params.id);
-    
-    
-    model.classroom.findOne()
-    .where('_id').equals(class_id)
-    .select('notice_list')
-    .then(result => {
+    model.user.findOne().where("_id").equals(user_id).then(result => {
+        if(result === null) throw new Error('user-not-found');
+        return model.classroom.findOne()
+            .where('_id').equals(class_id)
+            .where('user_list').equals(result.nickname)
+            .select('notice_list').select({_id: 0});
+    }).then(result => {
         if(result === null) throw new Error('no notice list');
         res.status(200).json(result);
     }).catch(err =>{
-        if(err.message === 'no notice list'){
+        if(err.message === 'user-not-found') {
+            res.status(403).json({message : 'user-not-found'});
+        }
+        else if(err.message === 'no notice list'){
             res.status(400).json({message :'no notice list'});
+        }
+        else{
+            res.status(500).json({message : 'server-error'});
+        }
+    });
+});
+
+router.post('/postNotice', function(req, res, next) {
+    const user_id = mongoose.Types.ObjectId(req.decoded_token._id);
+    const class_id = mongoose.Types.ObjectId(req.body.id);
+    model.user.findOne().where("_id").equals(user_id).then(result => {
+        if(result === null) throw new Error('user-not-found');
+        return model.classroom.findOne().where('_id').equals(class_id).where('classroom_owner').equals(result.nickname);
+    }).then(result=>{
+        if(result === null) throw new Error('teacher-auth-fail');
+        return model.classroom.updateOne({"_id": class_id}, {$push: {notice_list: {content: req.body.content, send_date: req.body.send_date}}});
+    }).then(result=>{
+        res.status(200).json({message: 'success'});
+    }).catch(err => {
+        if(err.message === 'user-not-found') {
+            res.status(403).json({message : 'user-not-found'});
         }
         else{
             res.status(500).json({message : 'server-error'});
@@ -202,13 +226,13 @@ router.post('/addStudentToClass',function(req, res, next) {
         if(err.message === 'add-student-not-found') {
             res.status(404).json({message: 'add-student-not-found'});
         }
-        if(err.message === 'user-not-found') {
+        else if(err.message === 'user-not-found') {
             res.status(403).json({message: 'user-not-found'});
         }
-        if(err.message === 'class-auth-fail') {
+        else if(err.message === 'class-auth-fail') {
             res.status(403).json({message: 'class-auth-fail'});
         }
-        if(err.message === 'update failure :classroom does not match'){
+        else if(err.message === 'update failure :classroom does not match'){
             res.status(400).json({message :'update failure :classroom does not match'});
         }else if(err.message === 'not found'){
             res.status(404).json({message : 'not found'});
@@ -286,8 +310,6 @@ router.get('/getClassAssignment/:id',function(req,res,next){
 
 });
 
-//getClassInfo하고 합칠 때 page값이 parameter로 넘어오는지 room의 넘버들은 어떻게 해쉬할 것인지
-
 router.get('/getChattingList/:page/:id', (req, res, next) => {
     
     const class_id = mongoose.Types.ObjectId(req.params.id);
@@ -339,5 +361,6 @@ router.post('/saveChatting',(req,res,next) => {
         res.status(500).json({message : 'server-error'});
     });
 });
+
 
 module.exports = router;
