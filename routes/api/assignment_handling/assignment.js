@@ -19,6 +19,9 @@ router.get('/getAssignmentForModifying/:id', function(req, res, next) {
 
     const response = {};
 
+    const SeaUCodeList = [];
+    const outProblemList = [];
+
     model.assignment.findOne().where('_id').equals(assignment_id).then(result => {
         if(result === null) throw new Error('not-assignment');
         for(const key of Object.keys(result._doc)) {
@@ -33,12 +36,29 @@ router.get('/getAssignmentForModifying/:id', function(req, res, next) {
         return model.user.findOne().where('_id').equals(user_id).where('nickname').in(result.classroom_owner);
     }).then(result => {
         if(result === null) throw new Error('teacher-auth-fail');
-        return model.problem.find().where('problem_number').in(response.problem_list)
+        for(let i = 0; i < response.problem_list.length; i++) {
+            const item = response.problem_list[i];
+            if(item.split('/')[0] === 'SeaUCode') {
+                SeaUCodeList.push(parseInt(item.split('/')[1]));
+            }
+            else {
+                outProblemList.push(item);
+            }
+        }
+        return model.problem.find().where('problem_number').in(SeaUCodeList)
             .select({_id: 0}).select('Category').select('problem_number').select('name');
     }).then(result => {
         response.problem_list = result;
+        for(let i = 0; i < response.problem_list.length; i++) {
+            response.problem_list[i]._doc.problem_number = "SeaUCode/" + response.problem_list[i].problem_number;
+        }
+        return model.outProblem.find().where('problem_number').in(outProblemList)
+            .select({_id: 0}).select('Category').select('problem_number').select('name');
+    }).then(result=> {
+        response.problem_list = response.problem_list.concat(result);
         res.status(200).json(response);
     }).catch(err => {
+        console.log(err);
         if(err.message === 'not-assignment')
             res.status(404).json({message: 'not-assignment'});
         else if(err.message === 'class-auth-fail')
@@ -72,7 +92,6 @@ router.get('/getAssignmentList/:class_id/:nickname', function(req, res, next) {
         }
         res.status(200).json({assignment_list: response});
     }).catch(err => {
-        console.log(err);
         if(err.message === 'class-auth-fail') res.status(403).json({message: 'class-auth-fail'});
         else if(err.message === 'class-owner') res.status(400).json({message: 'class-owner'});
         else if(err.message === 'not-class-user') res.status(404).json({message: 'not-class-user'});
@@ -82,16 +101,79 @@ router.get('/getAssignmentList/:class_id/:nickname', function(req, res, next) {
 
 router.get('/getAssignmentProgress/:assignment_id', function(req, res, next) {
     const assignment_id = mongoose.Types.ObjectId(req.params.assignment_id);
+
+    const SeaUCodeList = [];
+    const outProblemList = [];
+
+    const user_oj_id = {};
+
+    const response = {};
+
+    const asg_info = {}
+
     model.assignment.findOne().where("_id").equals(assignment_id).then(result => {
-        if(result === null) throw new Error('not-exist-assignment');
+        if (result === null) throw new Error('not-exist-assignment');
+
+        for (let i = 0; i < result.problem_list.length; i++) {
+            const item = result.problem_list[i];
+            if (item.split('/')[0] === 'SeaUCode') {
+                SeaUCodeList.push(parseInt(item.split('/')[1]));
+            }
+            else {
+                outProblemList.push(item);
+            }
+        }
+
+        asg_info.start_date = result.start_date;
+        asg_info.end_date = result.end_date;
+        asg_info.user_nickname = result.user_nickname;
+
+        return model.user.findOne().where("nickname").equals(asg_info.user_nickname);
+    }).then(result=>{
+        if(result !== null) {
+            user_oj_id.boj_id = result.boj_id;
+            user_oj_id.codeforces_id = result.codeforces_id;
+            user_oj_id.spoj_id = result.spoj_id;
+        }
+        else {
+            user_oj_id.boj_id = '';
+            user_oj_id.codeforces_id = '';
+            user_oj_id.spoj_id = '';
+        }
+
         return model.judge.distinct("problem_number", {
-            problem_number: {$in : result.problem_list},
-            pending_date: {$gte: result.start_date, $lte: result.end_date},
-            user_nickname: {$eq: result.user_nickname},
+            problem_number: {$in : SeaUCodeList},
+            pending_date: {$gte: asg_info.start_date, $lte: asg_info.end_date},
+            user_nickname: {$eq: asg_info.user_nickname},
             state: {$eq: 2}
         });
     }).then(result => {
-        res.status(200).json({acc_list: result});
+        for (let i = 0; i < result[i]; i++) {
+            result[i] = 'SeaUCode/' + result[i];
+        }
+        response.acc_list = result;
+        return model.outJudgeResult.distinct("problem_number", {
+            problem_number: { $in : outProblemList },
+            oj: "boj",
+            oj_id: user_oj_id.boj_id
+        });
+    }).then(result => {
+        response.acc_list = response.acc_list.concat(result);
+        return model.outJudgeResult.distinct("problem_number", {
+            problem_number: { $in : outProblemList },
+            oj: "codeforces",
+            oj_id: user_oj_id.codeforces_id
+        });
+    }).then(result => {
+        response.acc_list = response.acc_list.concat(result);
+        return model.outJudgeResult.distinct("problem_number", {
+            problem_number: { $in : outProblemList },
+            oj: "spoj",
+            oj_id: user_oj_id.spoj_id
+        });
+    }).then(result => {
+        response.acc_list = response.acc_list.concat(result);
+        res.status(200).json(response);
     }).catch(err => {
         if(err.message === 'not-exist-assignment') {
             res.status(404).json('not-exist-assignment');
