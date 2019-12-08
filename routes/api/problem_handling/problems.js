@@ -90,79 +90,6 @@ router.get('/getProblemList/category/:field/:page', (req, res, next) => {
     });
 });
 
-// SeaUCode 문제 추천
-
-router.get('/getProblemList/recommend/:nickname/:difficulty/:page', (req, res, next) => {
-    const page = req.params.page;
-    model.judge.distinct("problem_number", {
-        user_nickname: {$eq: req.params.nickname},
-        state: {$eq: 2}
-    }).then(result => {
-        return model.problem.find()
-            .where("problem_number").nin(result)
-            .where('difficulty').gte(parseInt(req.params.difficulty))
-            .lte(parseInt(req.params.difficulty) + 1)
-            .where('delete_yn').equals(false).sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
-            .select({"_id": 0}).select('name').select('problem_number').select('Category')
-    }).then(result => {
-            res.status(200).json({problem_list: result});
-    }).catch(err => {
-        res.status(500).json({message: "server-error"});
-    });
-});
-
-router.get('/getProblemList/recommend/:nickname/:difficulty/name/:field/:page', (req, res, next) => {
-    const page = req.params.page;
-    let tmp = "";
-    for(let i = 0; i < req.params.field.length; i++) {
-        if(req.params.field[i] === '\\') tmp += '[' + '\\' + '\\' + ']';
-        else tmp += '[' + req.params.field[i] + ']';
-    }
-    const re = new RegExp(tmp);
-
-    model.judge.distinct("problem_number", {
-        user_nickname: {$eq: req.params.nickname},
-        state: {$eq: 2}
-    }).then(result => {
-        return model.problem.find().where('name').regex(re)
-            .where("problem_number").nin(result)
-            .where('difficulty').gte(parseInt(req.params.difficulty))
-            .lte(parseInt(req.params.difficulty) + 1)
-            .where('delete_yn').equals(false).sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
-            .select({"_id": 0}).select('name').select('problem_number').select('Category')
-    }).then(result => {
-        res.status(200).json({problem_list: result});
-    }).catch(err => {
-        res.status(500).json({message: "server-error"});
-    });
-});
-
-router.get('/getProblemList/recommend/:nickname/:difficulty/category/:field/:page', (req, res, next) => {
-    const page = req.params.page;
-    let tmp = "";
-    for(let i = 0; i < req.params.field.length; i++) {
-        if(req.params.field[i] === '\\') tmp += '[' + '\\' + '\\' + ']';
-        else tmp += '[' + req.params.field[i] + ']';
-    }
-    const re = new RegExp(tmp);
-
-    model.judge.distinct("problem_number", {
-        user_nickname: {$eq: req.params.nickname},
-        state: {$eq: 2}
-    }).then(result => {
-        return model.problem.find().where('Category').regex(re)
-            .where("problem_number").nin(result)
-            .where('difficulty').gte(parseInt(req.params.difficulty))
-            .lte(parseInt(req.params.difficulty) + 1)
-            .where('delete_yn').equals(false).sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
-            .select({"_id": 0}).select('name').select('problem_number').select('Category')
-    }).then(result => {
-        res.status(200).json({problem_list: result});
-    }).catch(err => {
-        res.status(500).json({message: "server-error"});
-    });
-});
-
 // 외부 문제 불러오기
 
 router.get('/getOutProblemList/:oj/:page', (req, res, next) => {
@@ -225,6 +152,79 @@ router.get('/getOutProblemList/:oj/category/:field/:page', (req, res, next) => {
 });
 
 router.use(auth);
+
+// SeaUCode 문제 추천
+
+router.get('/getProblemList/recommend/:nickname/:difficulty/:page', (req, res, next) => {
+    const page = req.params.page;
+    model.judge.distinct("problem_number", {
+        user_nickname: {$eq: req.params.nickname},
+        state: {$eq: 2}
+    }).then(result => {
+        return model.problem.find()
+            .where("problem_number").nin(result)
+            .where('difficulty').gte(parseInt(req.params.difficulty))
+            .lte(parseInt(req.params.difficulty) + 1)
+            .where('delete_yn').equals(false).sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
+            .select({"_id": 0}).select('name').select('problem_number').select('Category')
+    }).then(result => {
+        res.status(200).json({problem_list: result});
+    }).catch(err => {
+        res.status(500).json({message: "server-error"});
+    });
+});
+
+router.get('/getProblemList/recommend/:nickname/:difficulty/name/:field/:page', (req, res, next) => {
+    const page = req.params.page;
+    let tmp = "";
+    for(let i = 0; i < req.params.field.length; i++) {
+        if(req.params.field[i] === '\\') tmp += '[' + '\\' + '\\' + ']';
+        else tmp += '[' + req.params.field[i] + ']';
+    }
+    const re = new RegExp(tmp);
+
+    model.judge.distinct("problem_number", {
+        user_nickname: {$eq: req.params.nickname},
+        state: {$eq: 2}
+    }).then(result => {
+        return model.problem.find().where('name').regex(re)
+            .where("problem_number").nin(result)
+            .where('difficulty').gte(parseInt(req.params.difficulty))
+            .lte(parseInt(req.params.difficulty) + 1)
+            .where('delete_yn').equals(false).sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
+            .select({"_id": 0}).select('name').select('problem_number').select('Category')
+    }).then(result => {
+        res.status(200).json({problem_list: result});
+    }).catch(err => {
+        res.status(500).json({message: "server-error"});
+    });
+});
+
+router.get('/getProblemList/recommend/:nickname/:difficulty/category/:field/:page', (req, res, next) => {
+    const page = req.params.page;
+    let tmp = "";
+    for(let i = 0; i < req.params.field.length; i++) {
+        if(req.params.field[i] === '\\') tmp += '[' + '\\' + '\\' + ']';
+        else tmp += '[' + req.params.field[i] + ']';
+    }
+    const re = new RegExp(tmp);
+
+    model.judge.distinct("problem_number", {
+        user_nickname: {$eq: req.params.nickname},
+        state: {$eq: 2}
+    }).then(result => {
+        return model.problem.find().where('Category').regex(re)
+            .where("problem_number").nin(result)
+            .where('difficulty').gte(parseInt(req.params.difficulty))
+            .lte(parseInt(req.params.difficulty) + 1)
+            .where('delete_yn').equals(false).sort({"problem_number" : 1}).skip(page * 15 - 15).limit(15)
+            .select({"_id": 0}).select('name').select('problem_number').select('Category')
+    }).then(result => {
+        res.status(200).json({problem_list: result});
+    }).catch(err => {
+        res.status(500).json({message: "server-error"});
+    });
+});
 
 // 추천 문제 필터링
 router.get('/getOutProblemList/:oj/recommend/:nickname/:difficulty/:page', (req, res, next) => {
