@@ -38,15 +38,15 @@ app.use(cookieParser());
 app.use(stylus.middleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/admin', adminRouter);
-app.use('/register', registerRouter);
-app.use('/login', loginRouter);
-app.use('/loggedIn', loggedInRouter);
-app.use('/class', classRouter);
-app.use('/user',userRouter);
-app.use('/pending', pendingRouter);
-app.use('/problems', problemsRouter);
-app.use('/assignment', assignmentRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/register', registerRouter);
+app.use('/api/login', loginRouter);
+app.use('/api/loggedIn', loggedInRouter);
+app.use('/api/class', classRouter);
+app.use('/api/user',userRouter);
+app.use('/api/pending', pendingRouter);
+app.use('/api/problems', problemsRouter);
+app.use('/api/assignment', assignmentRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
