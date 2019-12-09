@@ -60,7 +60,7 @@ const storage = multer.diskStorage({
         cb(null, file.originalname);
     }
 });
-const upload = multer({ storage: storage }).array('files', 11);
+const upload = multer({ storage: storage, limits: { fieldSize: 128 * 1024 * 1024 } }).array('files', 11);
 
 router.post('/addProblem', (req, res, next) => {
     upload(req, res, function(err) {
